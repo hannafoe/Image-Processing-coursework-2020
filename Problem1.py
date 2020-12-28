@@ -42,13 +42,20 @@ if not img is None:
     ray_width_change_rate=rows//(ray_width//2)
     ray_width_change=0
     first_thrash=0
+    last_thrash=0
     start_big_right_move=0
+    start_big_left_move=0
     for x in range(rows):
         if x%go_right==0:
             factor+=1
         if start_big_right_move>0 and start_big_right_move<15:
             start_big_right_move+=1
             factor+=1
+        if start_big_left_move>0 and start_big_left_move<10:
+            start_big_left_move+=1
+        elif start_big_left_move>=10 and start_big_left_move<25:
+            start_big_left_move+=1
+            factor-=1
         if x%ray_width_change_rate==0:
             ray_width_change+=1
         for y in range(cols):
@@ -58,8 +65,14 @@ if not img is None:
                     if first_thrash==0:
                         start_big_right_move=1
                         first_thrash=1
+                    if x>(rows*0.6) and last_thrash==0 and y in range((cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-5,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
+                        start_big_left_move=1
+                        last_thrash=1
                     mask[x,y]=[50,50,50]
                 elif thresh2[x,y]==[0]:
+                    if x>(rows*0.6) and last_thrash==0 and y in range((cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-5,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
+                        start_big_left_move=1
+                        last_thrash=1
                     mask[x,y]=[100,100,100]
                 elif thresh3[x,y]==[0]:
                     mask[x,y]=[200,200,200]
