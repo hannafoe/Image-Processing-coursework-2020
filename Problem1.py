@@ -118,7 +118,7 @@ def problem1(darkening_coef,blending_coef,mode):
         ray_range=60#from which column to which column the ray spans
         go_right=rows//ray_range
         factor=0
-        ray_width=25
+        ray_width=40
         ray_width_change_rate=rows//(ray_width//2)
         ray_width_change=0
         first_thrash=0
@@ -127,8 +127,8 @@ def problem1(darkening_coef,blending_coef,mode):
         start_big_left_move = 0
         distance = 0
         make_ray_thinner = 0
-        color_change_rate = 3
-        colors = [[255, 127, 127], [255, 0, 127], [255, 0, 0], [0, 255, 0], [0, 255, 255], [0, 127, 127], [0, 0, 255]]
+        color_change_rate = 5
+        colors = [[255, 127, 127], [255, 0, 127], [255, 0, 0], [0, 255, 0], [0, 255, 255], [0, 127, 127], [0, 127, 200]]
         for x in range(rows):
             if x % go_right == 0:
                 factor += 1
@@ -150,10 +150,9 @@ def problem1(darkening_coef,blending_coef,mode):
             col_change = 0
             count = 0
             for y in range(cols):
-                if(count % color_change_rate == 0) and col_change!=6:
-                    col_change += 1
-                i = random.randint(0, 1)
-                if y in range((cols//2+20)-(ray_range//2)+factor-i, (cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-i):
+                if y in range((cols//2+20)-(ray_range//2)+factor, (cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
+                    if(count % color_change_rate == 0) and col_change!=6:
+                        col_change += 1
                     if x > ((rows*end_of_face)+10) and make_ray_thinner < 6:
                         make_ray_thinner += 1
                         if make_ray_thinner % 3 == 0:
@@ -168,19 +167,11 @@ def problem1(darkening_coef,blending_coef,mode):
                         elif x-distance > 10 and x > (rows*0.3) and y in range((cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-5, (cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
                             factor -= 1
                             distance = x
-                    if thresh1[x, y] == [0] and (x > (rows*0.6) or x < (rows*0.2)):
-                        mask2[x, y] = colors[col_change]
-                    elif thresh2[x, y] == [0] and (x > (rows*0.6) or x < (rows*0.2)):
-                        mask2[x, y] = colors[col_change]
-                    elif thresh3[x, y] == [0]:
-                        mask2[x, y] = colors[col_change]
-                    else:
-                        mask2[x, y] = colors[col_change]
-                elif i == 1 and (y == (cols//2+20)-(ray_range//2)+factor or y == (cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
+                    #print(colors[col_change],col_change,x,y)
                     mask2[x, y] = colors[col_change]
+                    count += 1
                 else:
                     mask2[x, y] = [0, 0, 0]
-                count += 1
         mask2=cv2.blur(mask2,(7,7))
         cv2.imshow('Mask 2',mask2)
         mask = cv2.blur(mask, (7, 7))
@@ -188,11 +179,11 @@ def problem1(darkening_coef,blending_coef,mode):
         for x in range(rows):
             for y in range(cols):
                 for c in range(channels):
-                    mask[x,y,c] = 0.7*mask[x,y,c]
+                    mask[x,y,c] = 0.3*mask[x,y,c]
         for x in range(rows):
             for y in range(cols):
                 for c in range(channels):
-                    mask2[x,y,c] = 0.3*mask2[x,y,c]
+                    mask2[x,y,c] = 0.2*mask2[x,y,c]
         mask = mask+mask2
         cv2.imshow('Mask sum',mask)
         
