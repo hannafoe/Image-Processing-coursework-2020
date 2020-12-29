@@ -25,54 +25,79 @@ if not img is None:
     ret,thresh1 = cv2.threshold(gray,20,255,cv2.THRESH_BINARY)
     ret,thresh2 = cv2.threshold(gray,50,255,cv2.THRESH_BINARY)
     ret,thresh3 = cv2.threshold(gray,80,255,cv2.THRESH_BINARY)
-    cv2.imshow('thresholded image 1',thresh1)
-    cv2.imshow('thresholded image 2',thresh2)
-    #cv2.imshow('thresholded image 3',thresh3)
+    #cv2.imshow('thresholded image 1',thresh1)
+    #cv2.imshow('thresholded image 2',thresh2)
+    cv2.imshow('thresholded image 3',thresh3)
     #Find the contours of the face
     edge_img = cv2.Canny(gray,20,255)
     cv2.imshow('Edge image',edge_img)
+    whole_row=0
+    end_of_face=0
+    for x in range(int(0.55*rows),int(0.85*rows)):
+        for y in range(int(0.58*cols),int(0.6*cols)):
+            if thresh3[x,y]==0:
+                #print(x,y)
+                whole_row=1
+            else:
+                whole_row=0
+                break
+        if whole_row==1:
+            end_of_face=x
 
+    print(end_of_face)
 
     #create mask, ray of light
     mask=np.zeros((rows, cols, channels))
     ray_range=60#from which column to which column the ray spans
     go_right=rows//ray_range
     factor=0
-    ray_width=30
+    ray_width=25
     ray_width_change_rate=rows//(ray_width//2)
     ray_width_change=0
     first_thrash=0
     last_thrash=0
     start_big_right_move=0
     start_big_left_move=0
+    distance=0
+    make_ray_thinner=0
+    end_of_face=(end_of_face//400)-0.05
     for x in range(rows):
         if x%go_right==0:
             factor+=1
-        if start_big_right_move>0 and start_big_right_move<15:
+        if start_big_right_move>0 and start_big_right_move<30:
             start_big_right_move+=1
-            factor+=1
-        if start_big_left_move>0 and start_big_left_move<10:
+            if(start_big_right_move%2==0):
+                factor+=1
+        if start_big_left_move>0 and start_big_left_move<20:
             start_big_left_move+=1
-        elif start_big_left_move>=10 and start_big_left_move<25:
+            if start_big_left_move<10:
+                ray_width_change+=1
+        elif start_big_left_move>=20 and start_big_left_move<30:
             start_big_left_move+=1
             factor-=1
+            ray_width_change-=1
         if x%ray_width_change_rate==0:
             ray_width_change+=1
         for y in range(cols):
             i=random.randint(0,1)
             if y in range((cols//2+20)-(ray_range//2)+factor-i,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-i):
-                if thresh1[x,y]==[0]:
+                if x>(rows*0.61-6) and make_ray_thinner<6:
+                    make_ray_thinner+=1
+                    if make_ray_thinner%3==0:
+                        ray_width_change+=1
+                if thresh1[x,y]==[0] or thresh2[x,y]==0:
                     if first_thrash==0:
                         start_big_right_move=1
                         first_thrash=1
-                    if x>(rows*0.6) and last_thrash==0 and y in range((cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-5,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
+                    if x>(rows*0.61) and last_thrash==0 and y in range((cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-5,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
                         start_big_left_move=1
                         last_thrash=1
+                    elif x-distance>10 and x>(rows*0.3) and y in range((cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-5,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
+                        factor-=2
+                        distance=x
+                if thresh1[x,y]==[0] and (x>(rows*0.6) or x<(rows*0.2)):
                     mask[x,y]=[50,50,50]
-                elif thresh2[x,y]==[0]:
-                    if x>(rows*0.6) and last_thrash==0 and y in range((cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-5,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
-                        start_big_left_move=1
-                        last_thrash=1
+                elif thresh2[x,y]==[0] and (x>(rows*0.6) or x<(rows*0.2)):
                     mask[x,y]=[100,100,100]
                 elif thresh3[x,y]==[0]:
                     mask[x,y]=[200,200,200]
@@ -88,7 +113,7 @@ if not img is None:
     mask = mask.astype(np.uint8)
     #img = cv2.addWeighted(img,0.7,mask,0.3,0)
     #Create a function that does the same without using addWeighted
-    blending_coef=0.7 #Change with user input later, between 0 and 1, 0 being only the mask and 1 being only the image
+    blending_coef=0.5 #Change with user input later, between 0 and 1, 0 being only the mask and 1 being only the image
     for x in range(rows):
         for y in range(cols):
             for c in range(channels):
