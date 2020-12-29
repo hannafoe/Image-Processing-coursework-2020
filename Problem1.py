@@ -28,7 +28,7 @@ def problem1(darkening_coef,blending_coef,mode):
         whole_row=0
         end_of_face=0
         first=0
-        for x in range(int(0.55*rows),int(0.85*rows)):
+        for x in range(int(0.85*rows),int(0.6*rows),-1):
             for y in range(int(0.58*cols),int(0.6*cols)):
                 if thresh3[x,y]==0:
                     #print(x,y)
@@ -60,7 +60,7 @@ def problem1(darkening_coef,blending_coef,mode):
         distance=0
         make_ray_thinner=0
         if first>55:
-            end_of_face=(end_of_face/400)-0.16
+            end_of_face=(end_of_face/400)-0.14
         else:
             end_of_face=(end_of_face/400)-0.08
         print(end_of_face)
@@ -69,11 +69,11 @@ def problem1(darkening_coef,blending_coef,mode):
                 factor+=1
             if start_big_right_move>0 and start_big_right_move<30:
                 start_big_right_move+=1
-                if(start_big_right_move%2==0):
+                if start_big_right_move%3==0:
                     factor+=1
             if start_big_left_move>0 and start_big_left_move<20:
                 start_big_left_move+=1
-                if start_big_left_move>2 and start_big_left_move<13:
+                if start_big_left_move%2==0:
                     ray_width_change+=1
             elif start_big_left_move>=20 and start_big_left_move<30:
                 start_big_left_move+=1
@@ -85,9 +85,10 @@ def problem1(darkening_coef,blending_coef,mode):
             for y in range(cols):
                 i=random.randint(0,1)
                 if y in range((cols//2+20)-(ray_range//2)+factor-i,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-i):
-                    if x>(rows*end_of_face-6) and make_ray_thinner<6:
+                    if x>((rows*end_of_face)+10) and make_ray_thinner<6:
                         make_ray_thinner+=1
                         if make_ray_thinner%3==0:
+                            factor-=1
                             ray_width_change+=1
                     if thresh1[x,y]==[0] or thresh2[x,y]==0:
                         if first_thrash==0 and y in range((cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-5,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
