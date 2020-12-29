@@ -5,7 +5,7 @@ import random
 def problem1(darkening_coef,blending_coef,mode):
     #read an image from the specified file
     #Later change this to arbitrary input image file
-    img = cv2.imread('./face1.jpg',cv2.IMREAD_COLOR)
+    img = cv2.imread('./face2.jpg',cv2.IMREAD_COLOR)
     if not img is None:
         #cv2.imshow('Original image',img)
         rows,cols,channels = img.shape
@@ -88,7 +88,6 @@ def problem1(darkening_coef,blending_coef,mode):
                     if x>((rows*end_of_face)+10) and make_ray_thinner<6:
                         make_ray_thinner+=1
                         if make_ray_thinner%3==0:
-                            factor-=1
                             ray_width_change+=1
                     if thresh1[x,y]==[0] or thresh2[x,y]==0:
                         if first_thrash==0 and y in range((cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-5,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
@@ -101,7 +100,7 @@ def problem1(darkening_coef,blending_coef,mode):
                             factor-=1
                             distance=x
                     if thresh1[x,y]==[0] and (x>(rows*0.6) or x<(rows*0.2)):
-                        mask[x,y]=[50,50,50]
+                        mask[x,y]=[25,25,25]
                     elif thresh2[x,y]==[0] and (x>(rows*0.6) or x<(rows*0.2)):
                         mask[x,y]=[100,100,100]
                     elif thresh3[x,y]==[0]:
