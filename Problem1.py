@@ -16,6 +16,8 @@ def problem1(darkening_coef,blending_coef,mode):
                 for c in range(channels):
                     img[x,y,c] = darkening_coef*img[x,y,c]
         #cv2.imshow('Darker image',img)
+
+        #############CREATE MASK##########################
         #Do some image thresholding to find the dark areas of the face
         gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
         ret,thresh1 = cv2.threshold(gray,20,255,cv2.THRESH_BINARY)
@@ -23,7 +25,7 @@ def problem1(darkening_coef,blending_coef,mode):
         ret,thresh3 = cv2.threshold(gray,80,255,cv2.THRESH_BINARY)
         #cv2.imshow('thresholded image 1',thresh1)
         #cv2.imshow('thresholded image 2',thresh2)
-        cv2.imshow('thresholded image 3',thresh3)
+        #cv2.imshow('thresholded image 3',thresh3)
         #Find the contours of the face
         whole_row=0
         end_of_face=0
@@ -44,7 +46,6 @@ def problem1(darkening_coef,blending_coef,mode):
 
         print(end_of_face)
         print(first)
-
         #create mask, ray of light
         mask=np.zeros((rows, cols, channels))
         ray_range=60#from which column to which column the ray spans
@@ -64,6 +65,8 @@ def problem1(darkening_coef,blending_coef,mode):
         else:
             end_of_face=(end_of_face/400)-0.08
         print(end_of_face)
+############CREATE SIMPLE MASK##########################################
+        if mode=='simple':
         for x in range(rows):
             if x%go_right==0:
                 factor+=1
