@@ -29,8 +29,6 @@ if not img is None:
     #cv2.imshow('thresholded image 2',thresh2)
     cv2.imshow('thresholded image 3',thresh3)
     #Find the contours of the face
-    edge_img = cv2.Canny(gray,20,255)
-    cv2.imshow('Edge image',edge_img)
     whole_row=0
     end_of_face=0
     for x in range(int(0.55*rows),int(0.85*rows)):
@@ -60,7 +58,8 @@ if not img is None:
     start_big_left_move=0
     distance=0
     make_ray_thinner=0
-    end_of_face=(end_of_face//400)-0.05
+    end_of_face=(end_of_face/400)-0.1
+    print(end_of_face)
     for x in range(rows):
         if x%go_right==0:
             factor+=1
@@ -81,15 +80,15 @@ if not img is None:
         for y in range(cols):
             i=random.randint(0,1)
             if y in range((cols//2+20)-(ray_range//2)+factor-i,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-i):
-                if x>(rows*0.61-6) and make_ray_thinner<6:
+                if x>(rows*end_of_face-6) and make_ray_thinner<6:
                     make_ray_thinner+=1
                     if make_ray_thinner%3==0:
                         ray_width_change+=1
                 if thresh1[x,y]==[0] or thresh2[x,y]==0:
-                    if first_thrash==0:
+                    if first_thrash==0 and y in range((cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-5,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
                         start_big_right_move=1
                         first_thrash=1
-                    if x>(rows*0.61) and last_thrash==0 and y in range((cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-5,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
+                    if x>(rows*end_of_face) and last_thrash==0 and y in range((cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-5,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
                         start_big_left_move=1
                         last_thrash=1
                     elif x-distance>10 and x>(rows*0.3) and y in range((cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor-5,(cols//2+20)-(ray_range//2)+(ray_width-ray_width_change)+factor):
