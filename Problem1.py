@@ -222,7 +222,70 @@ def problem1(img_name,darkening_coef,blending_coef,mode):
     else:
         print("No image file successfully loaded.")
     cv2.destroyAllWindows()
+    
+def problem2(img_name,blending_coef,mode):
+    img = cv2.imread(img_name,0)
+    if not img is None:
+        rows,cols = img.shape
+        img_inv = 255 - img
+        img_blur = cv2.GaussianBlur(img_inv, ksize=(21, 21),
+                            sigmaX=0, sigmaY=0)
+        cv2.imshow("Blurred inverse image",img_blur)
+        img_new = cv2.divide(img, 255-img_blur, scale=256)
+        cv2.imshow("sss",img_new)
+        noise = np.ones(img.shape)
+        for x in range(rows):
+            for y in range(cols):
+                noise[x,y]=random.randint(0, 100)
+        noise =noise.astype(np.uint8)
+        cv2.imshow('Noise',noise)
+        
+        noise2=np.ones(img.shape)
+        gaussian_kernel=[[0.011,0.083,0.011],
+                         [0.083,0.619,0.083],
+                         [0.011,0.083,0.011]]
+        
+        for x in range(rows):
+            flag=0
+            if random.randint(0,5)==0:
+                flag=1
+            for y in range(cols):
+                if flag==0 and x<398 and y<398:
+                    #apply Gaussian Kernel
+                    s=0
+                    for i in range(-1,2):
+                        for j in range(-1,2):
+                            s+=noise[x+i,y+i]*gaussian_kernel[i+1][j+1]
+                    noise2[x,y]=s
+        noise2=noise2.astype(np.uint8)
+        cv2.imshow('Noise 2',noise2)
+        noise = noise+noise2
+        for x in range(rows):
+            for y in range(cols):
+                noise[x,y] = (1-blending_coef)*noise[x,y]
 
-problem1('./face2.jpg',0.6,0.5,'rainbow')
+        #noise = noise*0.2
+        noise2=noise2.astype(np.uint8)
+        noise = cv2.GaussianBlur(noise,(7,7),0)
+        #noise=noise*0.2
+        
+        cv2.imshow('Changed Gaussian',noise)
+        for x in range(rows):
+            for y in range(cols):
+                img[x,y] = blending_coef*img[x,y]
+        #noise_new = cv2.add(img_new,noise)
+        img_new = cv2.bitwise_and(img,img_new)
+        
+        cv2.imshow("New image",img_new)
+        img = cv2.add(img,noise)
+        #img = img+noise
+        
+        img = img.astype(np.uint8)
+        cv2.imshow('Image',img)
+        cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
+
+#problem1('./face2.jpg',0.6,0.5,'rainbow')
+problem2('./face1.jpg',0.2,'monochrome')
 
