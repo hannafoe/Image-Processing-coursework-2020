@@ -337,7 +337,7 @@ def create_gaussian(sigma,kernel_dim):
 
 
 
-def problem3(img_name,blur_amount):
+def problem3(img_name,blur_amount_1,blur_amount_2):
     #filter that first smooths out an image
     #and then applies colour grading
     img = cv2.imread(img_name,cv2.IMREAD_COLOR)
@@ -347,17 +347,19 @@ def problem3(img_name,blur_amount):
         #gaussian_kernel=[[0.011,0.083,0.011],
         #                    [0.083,0.619,0.083],
         #                    [0.011,0.083,0.011]]
-        sigma=0.5
-        gaussian_kernel=create_gaussian(sigma,2*blur_amount+1)
-        kernel_dim=2*blur_amount+1
-        d=math.floor(kernel_dim/2)
-        for x in range(rows-2):
-            for y in range(cols-2):
+        sigma_1=blur_amount_1
+        sigma_2=blur_amount_2
+        kernel_dim=2*2+1
+        gaussian_kernel_1=create_gaussian(sigma_1,kernel_dim)
+        gaussian_kernel_2=create_gaussian(sigma_2,kernel_dim)
+        d=math.ceil(kernel_dim/2)
+        for x in range(rows-d):
+            for y in range(cols-d):
                 #apply Gaussian Kernel
                 s=0
-                for i in range(-1,2):
-                    for j in range(-1,2):
-                        s+=img[x+i,y+j]*gaussian_kernel[i+1][j+1]
+                for i in range(-d+1,d):
+                    for j in range(-d+1,d):
+                        s+=img[x+i,y+j]*gaussian_kernel_1[i+1][j+1]*gaussian_kernel_2[i+1][j+1]
                 img_cpy[x,y]=s
         img_cpy=img_cpy.astype(np.uint8)
         cv2.imshow('Original Image',img)
@@ -367,5 +369,5 @@ def problem3(img_name,blur_amount):
 
 #problem1('./face2.jpg',0.6,0.5,'rainbow')
 #problem2('./face1.jpg',0.8,'coloured pencil')
-problem3('./face1.jpg',1)
+problem3('./face1.jpg',6,0.1)
 
