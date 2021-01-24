@@ -225,25 +225,30 @@ def problem1(img_name,darkening_coef,blending_coef,mode):
     
 def problem2(img_name,blending_coef,mode):
     img = cv2.imread(img_name,0)
+    gray=cv2.imread(img_name,0)
     if not img is None:
         rows,cols = img.shape
-        #Make noise texture
-        if mode=='monochrome':
+
+        #Create noise texture
         noise = np.zeros(img.shape)
         for x in range(rows):
             for y in range(cols):
                 noise[x,y]=random.randint(0, 255)
         noise = noise.astype(np.uint8)
         cv2.imshow('Noise',noise)
-
+        '''if mode=='coloured pencil':
+            noise2 = np.zeros(img.shape)
+            for x in range(rows):
+                for y in range(cols):
+                    noise2[x,y]=random.randint(0, 255)
+            noise2 = noise2.astype(np.uint8)
+            cv2.imshow('Noise 2',noise2)'''
         #Apply motion blur
         kernel = np.zeros((9,9))
         kernel[:,int(len(kernel-1)/2)]=np.ones(len(kernel))
         #kernel[:,0]=np.ones(len(kernel))
         kernel[int(len(kernel-1)/2),:]=np.ones(len(kernel))
         kernel/=(2*len(kernel))
-        
-
         #Apply kernel
         noise2=np.copy(noise)
         for x in range(rows-4):
@@ -269,6 +274,7 @@ def problem2(img_name,blending_coef,mode):
         #cv2.add(img,noise)
         img=img+noise
         img = img.astype(np.uint8)
+        img = cv2.merge((img,img,gray))
         cv2.imshow('Image',img)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
