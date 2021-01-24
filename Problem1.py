@@ -227,59 +227,47 @@ def problem2(img_name,blending_coef,mode):
     img = cv2.imread(img_name,0)
     if not img is None:
         rows,cols = img.shape
-        img_inv = 255 - img
-        img_blur = cv2.GaussianBlur(img_inv, ksize=(21, 21),
-                            sigmaX=0, sigmaY=0)
-        cv2.imshow("Blurred inverse image",img_blur)
-        img_new = cv2.divide(img, 255-img_blur, scale=256)
-        cv2.imshow("sss",img_new)
-        noise = np.ones(img.shape)
+        #Make noise texture
+        if mode=='monochrome':
+        noise = np.zeros(img.shape)
         for x in range(rows):
             for y in range(cols):
-                noise[x,y]=random.randint(0, 100)
-        noise =noise.astype(np.uint8)
+                noise[x,y]=random.randint(0, 255)
+        noise = noise.astype(np.uint8)
         cv2.imshow('Noise',noise)
-        
-        noise2=np.ones(img.shape)
-        gaussian_kernel=[[0.011,0.083,0.011],
-                         [0.083,0.619,0.083],
-                         [0.011,0.083,0.011]]
-        
-        for x in range(rows):
-            flag=0
-            if random.randint(0,5)==0:
-                flag=1
-            for y in range(cols):
-                if flag==0 and x<398 and y<398:
-                    #apply Gaussian Kernel
-                    s=0
-                    for i in range(-1,2):
-                        for j in range(-1,2):
-                            s+=noise[x+i,y+i]*gaussian_kernel[i+1][j+1]
-                    noise2[x,y]=s
-        noise2=noise2.astype(np.uint8)
-        cv2.imshow('Noise 2',noise2)
-        noise = noise+noise2
-        for x in range(rows):
-            for y in range(cols):
-                noise[x,y] = (1-blending_coef)*noise[x,y]
 
-        #noise = noise*0.2
-        noise2=noise2.astype(np.uint8)
-        noise = cv2.GaussianBlur(noise,(7,7),0)
-        #noise=noise*0.2
+        #Apply motion blur
+        kernel = np.zeros((9,9))
+        kernel[:,int(len(kernel-1)/2)]=np.ones(len(kernel))
+        #kernel[:,0]=np.ones(len(kernel))
+        kernel[int(len(kernel-1)/2),:]=np.ones(len(kernel))
+        kernel/=(2*len(kernel))
         
-        cv2.imshow('Changed Gaussian',noise)
+
+        #Apply kernel
+        noise2=np.copy(noise)
+        for x in range(rows-4):
+            for y in range(cols-4):
+                s=0
+                for i in range(-4,5):
+                    for j in range(-4,5):
+                        s+=noise[x+i,y+i]*kernel[i+4][j+4]
+                noise2[x,y]=s
+        noise = noise2
+        noise = noise.astype(np.uint8)
+        cv2.imshow('Blur noise',noise)
+
+        
         for x in range(rows):
             for y in range(cols):
                 img[x,y] = blending_coef*img[x,y]
-        #noise_new = cv2.add(img_new,noise)
-        img_new = cv2.bitwise_and(img,img_new)
+        for x in range(rows):
+            for y in range(cols):
+                noise[x,y] = (1-blending_coef)*noise[x,y]
         
-        cv2.imshow("New image",img_new)
-        img = cv2.add(img,noise)
-        #img = img+noise
-        
+        #cv2.addWeighted(img,0.5,noise,1,0.0)
+        #cv2.add(img,noise)
+        img=img+noise
         img = img.astype(np.uint8)
         cv2.imshow('Image',img)
         cv2.waitKey(0)
@@ -287,5 +275,5 @@ def problem2(img_name,blending_coef,mode):
 
 
 #problem1('./face2.jpg',0.6,0.5,'rainbow')
-problem2('./face1.jpg',0.2,'monochrome')
+problem2('./face1.jpg',0.8,'monochrome')
 
