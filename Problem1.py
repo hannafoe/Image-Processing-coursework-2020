@@ -256,7 +256,7 @@ def problem2(img_name,blending_coef,mode):
                 s=0
                 for i in range(-4,5):
                     for j in range(-4,5):
-                        s+=noise[x+i,y+i]*kernel[i+4][j+4]
+                        s+=noise[x+i,y+j]*kernel[i+4][j+4]
                 noise2[x,y]=s
         noise = noise2
         noise = noise.astype(np.uint8)
