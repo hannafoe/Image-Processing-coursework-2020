@@ -225,7 +225,7 @@ def problem1(img_name,darkening_coef,blending_coef,mode):
     
 def problem2(img_name,blending_coef,mode):
     img = cv2.imread(img_name,0)
-    gray=cv2.imread(img_name,0)
+    gray=img
     if not img is None:
         rows,cols = img.shape
 
@@ -236,50 +236,73 @@ def problem2(img_name,blending_coef,mode):
                 noise[x,y]=random.randint(0, 255)
         noise = noise.astype(np.uint8)
         cv2.imshow('Noise',noise)
-        '''if mode=='coloured pencil':
-            noise2 = np.zeros(img.shape)
-            for x in range(rows):
-                for y in range(cols):
-                    noise2[x,y]=random.randint(0, 255)
-            noise2 = noise2.astype(np.uint8)
-            cv2.imshow('Noise 2',noise2)'''
         #Apply motion blur
-        kernel = np.zeros((9,9))
-        kernel[:,int(len(kernel-1)/2)]=np.ones(len(kernel))
+        #instead of building a kernel and then multiplying convulating the kernel with each pixel of image
+        #since this takes a lot of time, only multiply image with elements that wouldn't be zero in the kernel
+        #kernel = np.zeros((9,9))
+        #kernel[:,int(len(kernel-1)/2)]=np.ones(len(kernel))
         #kernel[:,0]=np.ones(len(kernel))
-        kernel[int(len(kernel-1)/2),:]=np.ones(len(kernel))
-        kernel/=(2*len(kernel))
+        #kernel[int(len(kernel-1)/2),:]=np.ones(len(kernel))
+        #kernel/=(2*len(kernel))
         #Apply kernel
         noise2=np.copy(noise)
-        for x in range(rows-4):
-            for y in range(cols-4):
+        for x in range(rows-6):
+            for y in range(cols-6):
                 s=0
-                for i in range(-4,5):
-                    for j in range(-4,5):
-                        s+=noise[x+i,y+j]*kernel[i+4][j+4]
+                for i in range(-6,7):
+                    s+=noise[x,y+i]*(1/13)
                 noise2[x,y]=s
         noise = noise2
         noise = noise.astype(np.uint8)
         cv2.imshow('Blur noise',noise)
 
         
-        for x in range(rows):
-            for y in range(cols):
-                img[x,y] = blending_coef*img[x,y]
-        for x in range(rows):
-            for y in range(cols):
-                noise[x,y] = (1-blending_coef)*noise[x,y]
         
-        #cv2.addWeighted(img,0.5,noise,1,0.0)
-        #cv2.add(img,noise)
-        img=img+noise
-        img = img.astype(np.uint8)
-        img = cv2.merge((img,img,gray))
+        if mode=='coloured pencil':
+            b=noise
+            noise = np.zeros(img.shape)
+            for x in range(rows):
+                for y in range(cols):
+                    noise[x,y]=random.randint(0, 255)
+            noise = noise.astype(np.uint8)
+            noise2=np.copy(noise)
+            cv2.imshow('Noise 2',noise)
+            for x in range(rows-4):
+                for y in range(cols-4):
+                    s=0
+                    for i in range(-4,5):
+                        s+=noise[x+i,y+i]*(1/9)
+                    noise2[x,y]=s
+            noise = noise2
+            noise = noise.astype(np.uint8)
+            cv2.imshow('Blur noise 2',noise)
+            g=noise
+            for x in range(rows):
+                for y in range(cols):
+                    gray[x,y] = blending_coef*gray[x,y]
+            for x in range(rows):
+                for y in range(cols):
+                    b[x,y] = (1-blending_coef)*b[x,y]
+            for x in range(rows):
+                for y in range(cols):
+                    g[x,y] = (1-blending_coef)*g[x,y]
+            img = cv2.merge((b,g,gray))
+        else:
+            for x in range(rows):
+                for y in range(cols):
+                    img[x,y] = blending_coef*img[x,y]
+            for x in range(rows):
+                for y in range(cols):
+                    noise[x,y] = (1-blending_coef)*noise[x,y]
+            #cv2.addWeighted(img,0.5,noise,1,0.0)
+            #cv2.add(img,noise)
+            img=img+noise
+            img = img.astype(np.uint8)
         cv2.imshow('Image',img)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 
 #problem1('./face2.jpg',0.6,0.5,'rainbow')
-problem2('./face1.jpg',0.8,'monochrome')
+problem2('./face1.jpg',0.8,'')
 
