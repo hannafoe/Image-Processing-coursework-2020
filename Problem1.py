@@ -335,6 +335,31 @@ def create_gaussian(sigma,kernel_dim):
     print(kernel)
     return kernel
 
+def create_gaussian_2(sigma,kernel_dim):
+    kernel=[]
+    d=math.floor(kernel_dim/2)
+    s=0
+    for i in range(-d,d+1):
+        lst=[]
+        for j in range(-d,d+1):
+            if i==0 and j==0:
+                n=0
+                print(n)
+            else:
+                i=abs(i)
+                j=abs(j)
+                n=math.sqrt((i*i)+(j*j))
+                print(n)
+            a=gaussian(n,sigma)
+            s+=a
+            lst.append(a)
+        kernel.append(lst)
+    for i in range(-d,d+1):
+        for j in range(-d,d+1):
+            kernel[i][j]=kernel[i][j]/s
+    print(s)
+    print(kernel)
+    return kernel
 
 
 def problem3(img_name,blur_amount_1,blur_amount_2):
@@ -351,10 +376,22 @@ def problem3(img_name,blur_amount_1,blur_amount_2):
         sigma_2=blur_amount_2
         kernel_dim=2*2+1
         gaussian_kernel_1=create_gaussian(sigma_1,kernel_dim)
-        gaussian_kernel_2=create_gaussian(sigma_2,kernel_dim)
+        #gaussian_kernel_2=create_gaussian(sigma_2,kernel_dim)
         d=math.ceil(kernel_dim/2)
         for x in range(rows-d):
             for y in range(cols-d):
+                sum_Ips=0
+                gaussian_kernel_2=[]
+                for i in range(-d+1,d):
+                    lst=[]
+                    for j in range(-d+1,d):
+                        g_2=gaussian(math.sqrt((img[x,y]*img[x,y])-(img[x+i,y+j]*img[x+i,y+j])),sigma_2)
+                        sum_Ips+=g_2
+                        lst.append(g_2)
+                gaussian_kernel_2.append(lst)
+                for i in range(-d,d+1):
+                    for j in range(-d,d+1):
+                        gaussian_kernel_2[i][j]=gaussian_kernel_2[i][j]/sum_Ips
                 #apply Gaussian Kernel
                 s=0
                 for i in range(-d+1,d):
