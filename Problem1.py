@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import random
+import math
 
 def problem1(img_name,darkening_coef,blending_coef,mode):
     #read an image from the specified file
@@ -246,11 +247,11 @@ def problem2(img_name,blending_coef,mode):
         #kernel/=(2*len(kernel))
         #Apply kernel
         noise2=np.copy(noise)
-        for x in range(rows-6):
-            for y in range(cols-6):
+        for x in range(rows-4):
+            for y in range(cols-4):
                 s=0
-                for i in range(-6,7):
-                    s+=noise[x,y+i]*(1/13)
+                for i in range(-4,5):
+                    s+=noise[x,y+i]*(1/9)
                 noise2[x,y]=s
         noise = noise2
         noise = noise.astype(np.uint8)
@@ -286,7 +287,9 @@ def problem2(img_name,blending_coef,mode):
             for x in range(rows):
                 for y in range(cols):
                     g[x,y] = (1-blending_coef)*g[x,y]
-            img = cv2.merge((b,g,gray))
+            g=gray+g
+            b=gray+b
+            img = cv2.merge((b,gray,g))
         else:
             for x in range(rows):
                 for y in range(cols):
@@ -302,7 +305,67 @@ def problem2(img_name,blending_coef,mode):
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+def gaussian(x,sigma):
+    oben=math.exp(-0.5*(x**2)/(sigma**2))
+    unten=1/(math.sqrt(2*math.pi)*(sigma) )
+    return oben*unten
+def create_gaussian(sigma,kernel_dim):
+    kernel=[]
+    d=math.floor(kernel_dim/2)
+    s=0
+    for i in range(-d,d+1):
+        lst=[]
+        for j in range(-d,d+1):
+            if i==0 and j==0:
+                n=0
+                print(n)
+            else:
+                i=abs(i)
+                j=abs(j)
+                n=math.sqrt((i*i)+(j*j))
+                print(n)
+            a=gaussian(n,sigma)
+            s+=gaussian(n,sigma)
+            lst.append(a)
+        kernel.append(lst)
+    for i in range(-d,d+1):
+        for j in range(-d,d+1):
+            kernel[i][j]=kernel[i][j]/s
+    print(s)
+    print(kernel)
+    return kernel
+
+
+
+def problem3(img_name,blur_amount):
+    #filter that first smooths out an image
+    #and then applies colour grading
+    img = cv2.imread(img_name,cv2.IMREAD_COLOR)
+    if not img is None:
+        rows,cols,channels = img.shape
+        img_cpy=img.copy()
+        #gaussian_kernel=[[0.011,0.083,0.011],
+        #                    [0.083,0.619,0.083],
+        #                    [0.011,0.083,0.011]]
+        sigma=0.5
+        gaussian_kernel=create_gaussian(sigma,2*blur_amount+1)
+        kernel_dim=2*blur_amount+1
+        d=math.floor(kernel_dim/2)
+        for x in range(rows-2):
+            for y in range(cols-2):
+                #apply Gaussian Kernel
+                s=0
+                for i in range(-1,2):
+                    for j in range(-1,2):
+                        s+=img[x+i,y+j]*gaussian_kernel[i+1][j+1]
+                img_cpy[x,y]=s
+        img_cpy=img_cpy.astype(np.uint8)
+        cv2.imshow('Original Image',img)
+        cv2.imshow('Smoothed Image',img_cpy)
+        cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 #problem1('./face2.jpg',0.6,0.5,'rainbow')
-problem2('./face1.jpg',0.8,'')
+#problem2('./face1.jpg',0.8,'coloured pencil')
+problem3('./face1.jpg',1)
 
