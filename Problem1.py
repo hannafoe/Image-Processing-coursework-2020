@@ -382,13 +382,15 @@ def problem4(img_name,strength_swirl,radius_swirl):
                 if r==0:
                     continue
                 theta = math.acos(norm_x/r) #angle from center of img
+                if y>center_y:
+                    theta+=math.pi
                 #x_1=int(r*math.cos(theta))
                 #y_1=int(r*math.sin(theta))
                 strength_swirl_change = 1-(r/radius_swirl)
-                if x<200 and x>190 and y>190 and y<200:
-                    print(theta,strength_swirl_change)
+                #if x<200 and x>190 and y>190 and y<200:
+                #    print(theta,strength_swirl_change)
                 if(strength_swirl_change>0):
-                    angle = strength_swirl#*strength_swirl_change
+                    angle = strength_swirl#*strength_swirl_change*math.pi*2
                     theta += angle
                     norm_x = int(r*math.cos(theta)+0.5)
                     norm_y = int(r*math.sin(theta)+0.5)
@@ -404,5 +406,5 @@ def problem4(img_name,strength_swirl,radius_swirl):
 #problem1('./face2.jpg',0.6,0.5,'rainbow')
 #problem2('./face1.jpg',0.8,'coloured pencil')
 #problem3('./face1.jpg',0.7)
-problem4('./face1.jpg',math.pi,100)
+problem4('./face1.jpg',2,100)
 
