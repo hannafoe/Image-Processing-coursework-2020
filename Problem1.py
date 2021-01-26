@@ -363,10 +363,38 @@ def problem3(img_name,blur_amount):
         img_cpy=img_cpy.astype(np.uint8)
         cv2.imshow('Original Image',img)
         cv2.imshow('Smoothed Image',img_cpy)
-        cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+def problem4(img_name,strength_swirl,radius_swirl):
+    img = cv2.imread(img_name,cv2.IMREAD_COLOR)
+    if not img is None:
+        rows,cols,channels = img.shape
+        img_copy = img.copy()
+        center_x = cols//2
+        center_y = rows//2
+        for x in range(rows):
+            for y in range(cols):
+                norm_x = x-center_x
+                norm_y = y-center_y
+                r = math.sqrt(norm_x**2+norm_y**2) #distance from center of img
+                theta = math.acos(norm_x/dist) #angle from center of img
+                strength_swirl_change = 1-(dist/radius_swirl)
+                if(strength_swirl_change>0):
+                    angle = strength_swirl*strength_swirl_change
+                    theta += angle
+                    norm_x = r*cos(norm_x)
+                    norm_y = r*sin(norm_y)
+                norm_x = int(norm_x+0.5)
+                norm_y = int(norm_y+0.5)
+                img_copy[x,y]= img[norm_x,norm_y]
+        img=img.astype(np.uint8)
+        cv2.imshow('Original Image',img)
+        img_copy=img_copy.astype(np.uint8)
+        cv2.imshow('Swirl Image',img_copy)
     cv2.destroyAllWindows()
 
 #problem1('./face2.jpg',0.6,0.5,'rainbow')
 #problem2('./face1.jpg',0.8,'coloured pencil')
-problem3('./face1.jpg',0.7)
+#problem3('./face1.jpg',0.7)
+problem4('./face1.jpg',strength_swirl,radius_swirl)
 
