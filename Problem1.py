@@ -363,6 +363,7 @@ def problem3(img_name,blur_amount):
         img_cpy=img_cpy.astype(np.uint8)
         cv2.imshow('Original Image',img)
         cv2.imshow('Smoothed Image',img_cpy)
+        cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 def problem4(img_name,strength_swirl,radius_swirl):
@@ -381,24 +382,27 @@ def problem4(img_name,strength_swirl,radius_swirl):
                 if r==0:
                     continue
                 theta = math.acos(norm_x/r) #angle from center of img
+                #x_1=int(r*math.cos(theta))
+                #y_1=int(r*math.sin(theta))
                 strength_swirl_change = 1-(r/radius_swirl)
+                if x<200 and x>190 and y>190 and y<200:
+                    print(theta,strength_swirl_change)
                 if(strength_swirl_change>0):
-                    angle = strength_swirl*strength_swirl_change
+                    angle = strength_swirl#*strength_swirl_change
                     theta += angle
-                    norm_x = r*math.cos(norm_x)
-                    norm_y = r*math.sin(norm_y)
-                norm_x = int(norm_x+0.5)
-                norm_y = int(norm_y+0.5)
-                img_copy[x,y]= img[norm_x,norm_y]
+                    norm_x = int(r*math.cos(theta)+0.5)
+                    norm_y = int(r*math.sin(theta)+0.5)
+                    img_copy[x,y]= img[norm_x+center_x,norm_y+center_y]
         img=img.astype(np.uint8)
         cv2.imshow('Original Image',img)
         img_copy=img_copy.astype(np.uint8)
         cv2.imshow('Swirl Image',img_copy)
         cv2.imwrite('swirl_image.png',img_copy)
+        cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 #problem1('./face2.jpg',0.6,0.5,'rainbow')
 #problem2('./face1.jpg',0.8,'coloured pencil')
 #problem3('./face1.jpg',0.7)
-problem4('./face1.jpg',90,100)
+problem4('./face1.jpg',math.pi,100)
 
