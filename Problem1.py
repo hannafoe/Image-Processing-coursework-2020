@@ -366,14 +366,67 @@ def problem3(img_name,blur_amount):
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+def lowpassfilter():
+    image = cv2.imread('./face2.jpg',0)
+    if not image is None:
+        image=image.astype(np.uint8)
+        cv2.imshow('Original Image',image)
+        rows,cols = image.shape
+        center_x = cols//2
+        center_y = rows//2
+        image = image.astype(np.float32)
+        ###pre-filtering, low-pass filtering######
+        K=0.9###cut-off distance (radius) from the Fourier image origin
+        fft_img = np.fft.fft2(image)
+        fft_img = np.fft.fftshift(fft_img)
+        H = np.ones((rows,cols))
+        for x in range(rows):
+            for y in range(cols):
+                #math.sqrt(x**2+y**2)
+                #math.exp(-((x-center_x)**2+(y-center_y)**2)/(2*4**2))
+                
+                if math.exp(-((x-center_x)**2+(y-center_y)**2)/(2*4**2))<=K:
+                    H[x,y]=1
+                else:
+                    H[x,y]=0
+        fft_img =H*fft_img
+        fft_img=np.fft.ifftshift(fft_img)
+        image = np.fft.ifft2(fft_img)
+        image = np.real(image)
+        image=image.astype(np.uint8)
+        cv2.imshow('LPF image',image)
+        cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
 def problem4(img_name,strength_swirl,radius_swirl):
     img = cv2.imread(img_name,cv2.IMREAD_COLOR)
     if not img is None:
+        img=img.astype(np.uint8)
+        original_img = img.copy()
+        cv2.imshow('Original Image',img)
         rows,cols,channels = img.shape
-        #img = img.astype(np.float32)
-        img_copy = img.copy()
         center_x = cols//2
         center_y = rows//2
+        '''
+        #img = img.astype(np.float32)
+        ###pre-filtering, low-pass filtering######
+        img_b,img_g,img_r = cv2.split(img)
+        images=[img_b,img_g,img_r]
+        K=50 ###cut-off distance (radius) from the Fourier image origin
+        for image in images:
+            fft_img = np.fft.fft2(image)
+            fft_img = np.fft.fftshift(fft_img)
+            for x in range(rows):
+                for y in range(cols):
+                    if math.sqrt(x**2+y**2)>K:
+                        fft_img[x,y]=0
+            fft_img=np.fft.ifftshift(fft_img)
+            image = np.fft.ifft2(fft_img)
+            image = np.real(image)
+        img = cv2.merge((img_b,img_g,img_r))
+        img=img.astype(np.uint8)
+        cv2.imshow('LPF image',img)'''
+        img_copy = img.copy()
         for x in range(rows):
             for y in range(cols):
                 norm_x = x-center_x
@@ -408,12 +461,52 @@ def problem4(img_name,strength_swirl,radius_swirl):
                         print(norm_x,norm_y)
                         continue
                     img_copy[x,y]=1/((x_2-x_1)*(y_2-y_1))*(f_1+f_2+f_3+f_4)
-                    ###############################################
-        img=img.astype(np.uint8)
-        cv2.imshow('Original Image',img)
+                    ###############################################      
         img_copy=img_copy.astype(np.uint8)
         cv2.imshow('Swirl Image',img_copy)
-        cv2.imwrite('swirl_image_nn.png',img_copy)
+        img = img_copy.copy()
+        #cv2.imwrite('swirl_image_bilin.png',img_copy)
+        #######image warp inverse transformation######
+        for x in range(rows):
+            for y in range(cols):
+                norm_x = x-center_x
+                norm_y = y-center_y
+                r = math.sqrt((norm_x**2)+(norm_y**2)) #distance from center of img
+                if norm_x==0:
+                    norm_x=0.001
+                theta = math.atan(norm_y/norm_x) #angle from center of img
+                if x<center_x:
+                    theta+=math.pi
+                strength_swirl_change = 1-(r/radius_swirl)
+                if(strength_swirl_change>0):
+                    angle = -strength_swirl*strength_swirl_change*math.pi*2
+                    theta += angle
+                    #####nearest neighbour interpolation######
+                    #norm_x = int(r*math.cos(theta)+0.5)
+                    #norm_y = int(r*math.sin(theta)+0.5)
+                    #img_copy[x,y]= img[norm_x+center_x,norm_y+center_y]
+                    ##########################################
+                    #####bilinear interpolation#################
+                    norm_x = r*math.cos(theta)+center_x
+                    norm_y = r*math.sin(theta)+center_y
+                    x_1=math.floor(norm_x)
+                    y_1=math.floor(norm_y)
+                    x_2=math.ceil(norm_x)
+                    y_2=math.ceil(norm_y)
+                    f_1=img[x_1,y_1]*(x_2-norm_x)*(y_2-norm_y)
+                    f_2=img[x_2,y_1]*(norm_x-x_1)*(y_2-norm_y)
+                    f_3=img[x_1,y_2]*(x_2-norm_x)*(norm_y-y_1)
+                    f_4=img[x_2,y_2]*(norm_x-x_1)*(norm_y-y_1)
+                    if x_2==x_1 or y_2==y_1:
+                        print(norm_x,norm_y)
+                        continue
+                    img_copy[x,y]=1/((x_2-x_1)*(y_2-y_1))*(f_1+f_2+f_3+f_4)
+                    ###############################################      
+        img_copy=img_copy.astype(np.uint8)
+        cv2.imshow('Back to original',img_copy)
+        subtraction_img = original_img-img_copy
+        #subtraction_img=cv2.subtract(original_img,img_copy)
+        cv2.imshow('Difference between original and unswirled img',subtraction_img)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -421,4 +514,4 @@ def problem4(img_name,strength_swirl,radius_swirl):
 #problem2('./face1.jpg',0.8,'coloured pencil')
 #problem3('./face1.jpg',0.7)
 problem4('./face2.jpg',-0.4,150)
-
+#lowpassfilter()
