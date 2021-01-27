@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import random
 import math
-import scipy
+from scipy.interpolate import UnivariateSpline
 
 def problem1(img_name,darkening_coef,blending_coef,mode):
     #read an image from the specified file
@@ -319,12 +319,12 @@ def create_gaussian(sigma,kernel_dim):
         for j in range(-d,d+1):
             if i==0 and j==0:
                 n=0
-                print(n)
+                #print(n)
             else:
                 i=abs(i)
                 j=abs(j)
                 n=math.sqrt((i*i)+(j*j))
-                print(n)
+                #print(n)
             a=gaussian(n,sigma)
             s+=gaussian(n,sigma)
             lst.append(a)
@@ -332,8 +332,8 @@ def create_gaussian(sigma,kernel_dim):
     for i in range(-d,d+1):
         for j in range(-d,d+1):
             kernel[i][j]=kernel[i][j]/s
-    print(s)
-    print(kernel)
+    #print(s)
+    #print(kernel)
     return kernel
 
 
@@ -361,6 +361,30 @@ def problem3(img_name,blur_amount):
                         s+=img[x+i,y+j]*gaussian_kernel[i+d-1][j+d-1]
                 img_cpy[x,y]=s
         img_cpy=img_cpy.astype(np.uint8)
+        #####hardcode a lookup table######
+        org_values=[0,5,10,20,50,100,150,200,255]
+        new_values=[0,10,15,30,80,130,180,220,255]
+        new_values_2=[0,5,8,15,40,80,120,180,255]
+        new_values_3=[0,5,12,18,48,110,165,200,255]
+        #####apply Univariate spline to lookup table########
+        spl = UnivariateSpline(org_values,new_values)
+        spl_2 = UnivariateSpline(org_values,new_values_2)
+        spl_3=UnivariateSpline(org_values,new_values_3)
+        #####Apply new values to img###############
+        b,g,r = cv2.split(img_cpy)
+        ######Apply new values to channel b########
+        for x in range(rows):
+            for y in range(cols):
+                b[x,y]=spl(b[x,y])
+        ######Apply new values to channel g########
+        for x in range(rows):
+            for y in range(cols):
+                g[x,y]=spl(g[x,y])
+        ######Apply new values to channel r########
+        for x in range(rows):
+            for y in range(cols):
+                r[x,y]=spl_3(r[x,y])
+        img_cpy=cv2.merge((b,g,r))
         cv2.imshow('Original Image',img)
         cv2.imshow('Smoothed Image',img_cpy)
         cv2.waitKey(0)
@@ -512,6 +536,6 @@ def problem4(img_name,strength_swirl,radius_swirl):
 
 #problem1('./face2.jpg',0.6,0.5,'rainbow')
 #problem2('./face1.jpg',0.8,'coloured pencil')
-#problem3('./face1.jpg',0.7)
-problem4('./face2.jpg',-0.4,150)
+problem3('./face1.jpg',0.7)
+#problem4('./face2.jpg',-0.4,150)
 #lowpassfilter()
