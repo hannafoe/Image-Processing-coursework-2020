@@ -388,19 +388,37 @@ def problem4(img_name,strength_swirl,radius_swirl):
                 if(strength_swirl_change>0):
                     angle = strength_swirl*strength_swirl_change*math.pi*2
                     theta += angle
-                    norm_x = int(r*math.cos(theta)+0.5)
-                    norm_y = int(r*math.sin(theta)+0.5)
-                    img_copy[x,y]= img[norm_x+center_x,norm_y+center_y]
+                    #####nearest neighbour interpolation######
+                    #norm_x = int(r*math.cos(theta)+0.5)
+                    #norm_y = int(r*math.sin(theta)+0.5)
+                    #img_copy[x,y]= img[norm_x+center_x,norm_y+center_y]
+                    ##########################################
+                    #####bilinear interpolation#################
+                    norm_x = r*math.cos(theta)+center_x
+                    norm_y = r*math.sin(theta)+center_y
+                    x_1=math.floor(norm_x)
+                    y_1=math.floor(norm_y)
+                    x_2=math.ceil(norm_x)
+                    y_2=math.ceil(norm_y)
+                    f_1=img[x_1,y_1]*(x_2-norm_x)*(y_2-norm_y)
+                    f_2=img[x_2,y_1]*(norm_x-x_1)*(y_2-norm_y)
+                    f_3=img[x_1,y_2]*(x_2-norm_x)*(norm_y-y_1)
+                    f_4=img[x_2,y_2]*(norm_x-x_1)*(norm_y-y_1)
+                    if x_2==x_1 or y_2==y_1:
+                        print(norm_x,norm_y)
+                        continue
+                    img_copy[x,y]=1/((x_2-x_1)*(y_2-y_1))*(f_1+f_2+f_3+f_4)
+                    ###############################################
         img=img.astype(np.uint8)
         cv2.imshow('Original Image',img)
         img_copy=img_copy.astype(np.uint8)
         cv2.imshow('Swirl Image',img_copy)
-        cv2.imwrite('swirl_image.png',img_copy)
+        cv2.imwrite('swirl_image_nn.png',img_copy)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 #problem1('./face2.jpg',0.6,0.5,'rainbow')
 #problem2('./face1.jpg',0.8,'coloured pencil')
 #problem3('./face1.jpg',0.7)
-problem4('./face2.jpg',-0.4,100)
+problem4('./face2.jpg',-0.4,150)
 
