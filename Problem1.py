@@ -370,6 +370,7 @@ def create_gaussian(sigma,kernel_dim):
     return kernel
 
 def create_gaussian2(sigma,sigma2,kernel_dim,img,x,y):
+    rows,cols=img.shape
     kernel=[]
     d=math.floor(kernel_dim/2)
     s=0
@@ -415,41 +416,59 @@ def problem3(img_name,blur_amount):
     if not img is None:
         rows,cols,channels = img.shape
         img_cpy=img.copy()
-        #gaussian_kernel=[[0.011,0.083,0.011],
-        #                    [0.083,0.619,0.083],
-        #                    [0.011,0.083,0.011]]
-        sigma=8#blur_amount
-        sigma2=0.5
-        kernel_dim=5
+        ######ALTERNATIVELY APPLY GAUSSIAN FILTER#######################################
+        ######THIS IS MUCH FASTER THAN BILINEAR FILTER, BUT NOT AS NICE WITH THE EDGES##
+        #sigma=blur_amount
+        #kernel_dim=5
         #gaussian_kernel=create_gaussian(sigma,kernel_dim)
+        #d=math.ceil(kernel_dim/2)
+        #for x in range(rows-d):
+        #    for y in range(cols-d):
+        #        #apply Gaussian Kernel
+        #        s=0
+        #        for i in range(-d+1,d):
+        #            for j in range(-d+1,d):
+        #                s+=img[x+i,y+j]*gaussian_kernel[i+d-1][j+d-1]
+        #        img_cpy[x,y]=s
+        ######APPLY BILINEAR FILTER####################################################
+        ######!!!THIS PART TAKES ABOUT 3 MINUTES FOR IMAGE OF SIZE 400*400#############
+        sigma=blur_amount-15
+        sigma2=blur_amount
+        kernel_dim=3
         d=math.ceil(kernel_dim/2)
         b,g,r = cv2.split(img_cpy)
         c_cpy=np.zeros((rows,cols))
         channels = [b,g,r]
         copies=[]
         for c in channels:#channel
-            for x in range(rows-d):
-                for y in range(cols-d):
+            for x in range(rows):
+                for y in range(cols):
                     #apply Gaussian Kernel
                     s=0
                     g2 = create_gaussian2(sigma,sigma2,kernel_dim,c,x,y)
                     for i in range(-d+1,d):
                         for j in range(-d+1,d):
-                            s+=c[x+i,y+j]*g2[i+d-1][j+d-1]
+                            xs = x+i
+                            if xs>=rows:
+                                xs=rows-1
+                            ys = y+j
+                            if ys>=cols:
+                                ys=cols-1
+                            s+=c[xs,ys]*g2[i+d-1][j+d-1]
                     c_cpy[x,y]=s
             copies.append(c_cpy.copy())
         img_cpy = cv2.merge((copies[0],copies[1],copies[2]))
-
+        ###########################################################################
         img_cpy=img_cpy.astype(np.uint8)
-        '''
+        
         #####hardcode a lookup table######
         org_values=[0,5,10,20,50,100,150,200,255]
         new_values=[0,10,15,30,80,130,180,220,255]
-        new_values_2=[0,5,8,15,40,80,120,180,255]
+        new_values_2=[0,5,8,15,40,90,140,200,255]
         new_values_3=[0,5,12,18,48,110,165,200,255]
         #####apply Univariate spline to lookup table########
         spl = UnivariateSpline(org_values,new_values)
-        spl_2 = UnivariateSpline(org_values,new_values_2)
+        #spl_2 = UnivariateSpline(org_values,new_values_2)not used
         spl_3=UnivariateSpline(org_values,new_values_3)
         #####Apply new values to img###############
         b,g,r = cv2.split(img_cpy)
@@ -466,8 +485,9 @@ def problem3(img_name,blur_amount):
             for y in range(cols):
                 r[x,y]=spl_3(r[x,y])
         img_cpy=cv2.merge((b,g,r))
-        cv2.imshow('Original Image',img)'''
+        cv2.imshow('Original Image',img)
         cv2.imshow('Smoothed Image',img_cpy)
+        #cv2.imwrite('Smoothed_gaussian_0.7.png',img_cpy)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -511,25 +531,7 @@ def problem4(img_name,strength_swirl,radius_swirl):
         rows,cols,channels = img.shape
         center_x = cols//2
         center_y = rows//2
-        '''
-        #img = img.astype(np.float32)
-        ###pre-filtering, low-pass filtering######
-        img_b,img_g,img_r = cv2.split(img)
-        images=[img_b,img_g,img_r]
-        K=50 ###cut-off distance (radius) from the Fourier image origin
-        for image in images:
-            fft_img = np.fft.fft2(image)
-            fft_img = np.fft.fftshift(fft_img)
-            for x in range(rows):
-                for y in range(cols):
-                    if math.sqrt(x**2+y**2)>K:
-                        fft_img[x,y]=0
-            fft_img=np.fft.ifftshift(fft_img)
-            image = np.fft.ifft2(fft_img)
-            image = np.real(image)
-        img = cv2.merge((img_b,img_g,img_r))
-        img=img.astype(np.uint8)
-        cv2.imshow('LPF image',img)'''
+        
         img_copy = img.copy()
         for x in range(rows):
             for y in range(cols):
@@ -617,6 +619,6 @@ def problem4(img_name,strength_swirl,radius_swirl):
 #problem1('./face1.jpg',0.6,0.5,'simple')
 #problem2('./face1.jpg',0.5,'simple')
 #problem2('./face1.jpg',0.5,'coloured pencil')
-problem3('./face1.jpg',0.7)
+problem3('./face2.jpg',30)
 #problem4('./face2.jpg',-0.4,150)
 #lowpassfilter()
