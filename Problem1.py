@@ -369,7 +369,7 @@ def create_gaussian(sigma,kernel_dim):
     #print(kernel)
     return kernel
 
-def create_gaussian2(sigma,sigma2,kernel_dim,img,x,y):
+def create_bilinear(sigma,sigma2,kernel_dim,img,x,y):
     rows,cols=img.shape
     kernel=[]
     d=math.floor(kernel_dim/2)
@@ -445,7 +445,7 @@ def problem3(img_name,blur_amount):
                 for y in range(cols):
                     #apply Gaussian Kernel
                     s=0
-                    g2 = create_gaussian2(sigma,sigma2,kernel_dim,c,x,y)
+                    g2 = create_bilinear(sigma,sigma2,kernel_dim,c,x,y)
                     for i in range(-d+1,d):
                         for j in range(-d+1,d):
                             xs = x+i
@@ -531,7 +531,21 @@ def problem4(img_name,strength_swirl,radius_swirl):
         rows,cols,channels = img.shape
         center_x = cols//2
         center_y = rows//2
-        
+        ########CHECK CORRECTNESS OF PARAMETERS#################################
+        if radius_swirl>=min(center_x,center_y):
+            radius_swirl=min(center_x,center_y)-1
+            print("We have changed the radius of the swirl to fit the size of the image.")
+        ########################################################################
+        ########PRE-FILTERING WITH LOW-PASS FILTER##################
+        ########USED create_gaussian(sigma,kernel_dim)##############
+        ########THE FUNCTION I CREATED ABOVE########################
+        sigma=0.7
+        kernel_dim=5
+        gaussian_kernel=create_gaussian(sigma,kernel_dim)
+        gaussian_kernel=np.array(gaussian_kernel)
+        img = img.astype(np.float32)
+        img = cv2.filter2D(img,-1,gaussian_kernel)
+        ############################################################
         img_copy = img.copy()
         for x in range(rows):
             for y in range(cols):
@@ -564,14 +578,53 @@ def problem4(img_name,strength_swirl,radius_swirl):
                     f_3=img[x_1,y_2]*(x_2-norm_x)*(norm_y-y_1)
                     f_4=img[x_2,y_2]*(norm_x-x_1)*(norm_y-y_1)
                     if x_2==x_1 or y_2==y_1:
-                        print(norm_x,norm_y)
                         continue
                     img_copy[x,y]=1/((x_2-x_1)*(y_2-y_1))*(f_1+f_2+f_3+f_4)
                     ###############################################      
         img_copy=img_copy.astype(np.uint8)
         cv2.imshow('Swirl Image',img_copy)
+        cv2.imwrite('Swirl_img_prefiltering.png',img_copy)
+        ####################################################################
+        #########Do the same thing for image without prefiltering###########
+        #########Necessary for subtraction image############################
+        img = original_img.copy()
+        img_copy = img.copy()
+        for x in range(rows):
+            for y in range(cols):
+                norm_x = x-center_x
+                norm_y = y-center_y
+                r = math.sqrt((norm_x**2)+(norm_y**2)) #distance from center of img
+                if norm_x==0:
+                    norm_x=0.001
+                theta = math.atan(norm_y/norm_x) #angle from center of img
+                if x<center_x:
+                    theta+=math.pi
+                strength_swirl_change = 1-(r/radius_swirl)
+                if(strength_swirl_change>0):
+                    angle = strength_swirl*strength_swirl_change*math.pi*2
+                    theta += angle
+                    #####nearest neighbour interpolation######
+                    #norm_x = int(r*math.cos(theta)+0.5)
+                    #norm_y = int(r*math.sin(theta)+0.5)
+                    #img_copy[x,y]= img[norm_x+center_x,norm_y+center_y]
+                    ##########################################
+                    #####bilinear interpolation#################
+                    norm_x = r*math.cos(theta)+center_x
+                    norm_y = r*math.sin(theta)+center_y
+                    x_1=math.floor(norm_x)
+                    y_1=math.floor(norm_y)
+                    x_2=math.ceil(norm_x)
+                    y_2=math.ceil(norm_y)
+                    f_1=img[x_1,y_1]*(x_2-norm_x)*(y_2-norm_y)
+                    f_2=img[x_2,y_1]*(norm_x-x_1)*(y_2-norm_y)
+                    f_3=img[x_1,y_2]*(x_2-norm_x)*(norm_y-y_1)
+                    f_4=img[x_2,y_2]*(norm_x-x_1)*(norm_y-y_1)
+                    if x_2==x_1 or y_2==y_1:
+                        continue
+                    img_copy[x,y]=1/((x_2-x_1)*(y_2-y_1))*(f_1+f_2+f_3+f_4)
+                    ###############################################      
         img = img_copy.copy()
-        #cv2.imwrite('swirl_image_bilin.png',img_copy)
+        cv2.imwrite('swirl_image_without_prefiltering.png',img_copy)
         #######image warp inverse transformation######
         for x in range(rows):
             for y in range(cols):
@@ -604,21 +657,21 @@ def problem4(img_name,strength_swirl,radius_swirl):
                     f_3=img[x_1,y_2]*(x_2-norm_x)*(norm_y-y_1)
                     f_4=img[x_2,y_2]*(norm_x-x_1)*(norm_y-y_1)
                     if x_2==x_1 or y_2==y_1:
-                        print(norm_x,norm_y)
                         continue
                     img_copy[x,y]=1/((x_2-x_1)*(y_2-y_1))*(f_1+f_2+f_3+f_4)
                     ###############################################      
         img_copy=img_copy.astype(np.uint8)
-        cv2.imshow('Back to original',img_copy)
+        cv2.imshow('Image warping undone',img_copy)
+        cv2.imwrite('warping_undone.png',img_copy)
         subtraction_img = original_img-img_copy
-        #subtraction_img=cv2.subtract(original_img,img_copy)
         cv2.imshow('Difference between original and unswirled img',subtraction_img)
+        cv2.imwrite('subtraction_image.png',subtraction_img)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 #problem1('./face1.jpg',0.6,0.5,'simple')
 #problem2('./face1.jpg',0.5,'simple')
 #problem2('./face1.jpg',0.5,'coloured pencil')
-problem3('./face2.jpg',30)
-#problem4('./face2.jpg',-0.4,150)
+#problem3('./face2.jpg',30)
+problem4('./face2.jpg',-0.4,150)
 #lowpassfilter()
