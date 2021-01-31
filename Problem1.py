@@ -225,18 +225,33 @@ def problem1(img_name,darkening_coef,blending_coef,mode):
         print("No image file successfully loaded.")
     cv2.destroyAllWindows()
     
+
+
 def problem2(img_name,blending_coef,mode):
     img = cv2.imread(img_name,0)
     gray=img
     if not img is None:
         rows,cols = img.shape
+        #Create more sophisticated noise texture
+        noise = np.zeros(img.shape)
+        for x in range(rows):
+            for y in range(cols):
+                n = random.random()
+                if n<0.5:
+                    noise[x,y]=255
+                else:
+                    noise[x,y]=0
 
+
+
+        '''
         #Create noise texture
         noise = np.zeros(img.shape)
         for x in range(rows):
             for y in range(cols):
-                noise[x,y]=random.randint(0, 255)
+                noise[x,y]=random.randint(0, 255)'''
         noise = noise.astype(np.uint8)
+        
         cv2.imshow('Noise',noise)
         #Apply motion blur
         #instead of building a kernel and then multiplying convulating the kernel with each pixel of image
@@ -248,12 +263,16 @@ def problem2(img_name,blending_coef,mode):
         #kernel/=(2*len(kernel))
         #Apply kernel
         noise2=np.copy(noise)
-        for x in range(rows-4):
-            for y in range(cols-4):
+        b=0
+        for x in range(rows):
+            for y in range(cols):
+                if y>=cols-4:
+                    b+=1
                 s=0
-                for i in range(-4,5):
+                for i in range(-4,5-b):
                     s+=noise[x,y+i]*(1/9)
                 noise2[x,y]=s
+            b=0
         noise = noise2
         noise = noise.astype(np.uint8)
         cv2.imshow('Blur noise',noise)
@@ -261,20 +280,30 @@ def problem2(img_name,blending_coef,mode):
         
         
         if mode=='coloured pencil':
-            b=noise
+            b=np.copy(noise)
             noise = np.zeros(img.shape)
             for x in range(rows):
                 for y in range(cols):
                     noise[x,y]=random.randint(0, 255)
             noise = noise.astype(np.uint8)
+            #noise = cv2.GaussianBlur(noise,(3,3),0)
             noise2=np.copy(noise)
             cv2.imshow('Noise 2',noise)
-            for x in range(rows-4):
-                for y in range(cols-4):
+            a=0
+            j=0
+            for x in range(rows):
+                if j==rows-6:
+                    j=2
+                if j>rows-6:
+                    j+=1
+                for y in range(cols):
+                    if y>=cols-6:
+                        a+=1
                     s=0
-                    for i in range(-4,5):
-                        s+=noise[x+i,y+i]*(1/9)
+                    for i in range(-6,7-a-j):
+                        s+=noise[x+i,y+i]*(1/13)
                     noise2[x,y]=s
+                a=0
             noise = noise2
             noise = noise.astype(np.uint8)
             cv2.imshow('Blur noise 2',noise)
@@ -284,13 +313,20 @@ def problem2(img_name,blending_coef,mode):
                     gray[x,y] = blending_coef*gray[x,y]
             for x in range(rows):
                 for y in range(cols):
-                    b[x,y] = (1-blending_coef)*b[x,y]
+                    blend = ((1-blending_coef))+0.4
+                    if blend>=1:
+                        blend=1
+                        break
+                    b[x,y] = blend*b[x,y]
+                if blend==1:
+                    break
             for x in range(rows):
                 for y in range(cols):
-                    g[x,y] = (1-blending_coef)*g[x,y]
+                    blend = (1-blending_coef)
+                    g[x,y] = blend*g[x,y]
             g=gray+g
             b=gray+b
-            img = cv2.merge((b,gray,g))
+            img = cv2.merge((b,g,gray))
         else:
             for x in range(rows):
                 for y in range(cols):
@@ -400,7 +436,7 @@ def lowpassfilter():
         center_y = rows//2
         image = image.astype(np.float32)
         ###pre-filtering, low-pass filtering######
-        K=0.9###cut-off distance (radius) from the Fourier image origin
+        K=300###cut-off distance (radius) from the Fourier image origin
         fft_img = np.fft.fft2(image)
         fft_img = np.fft.fftshift(fft_img)
         H = np.ones((rows,cols))
@@ -408,8 +444,7 @@ def lowpassfilter():
             for y in range(cols):
                 #math.sqrt(x**2+y**2)
                 #math.exp(-((x-center_x)**2+(y-center_y)**2)/(2*4**2))
-                
-                if math.exp(-((x-center_x)**2+(y-center_y)**2)/(2*4**2))<=K:
+                if math.sqrt(x**2+y**2)<=K:
                     H[x,y]=1
                 else:
                     H[x,y]=0
@@ -534,8 +569,9 @@ def problem4(img_name,strength_swirl,radius_swirl):
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-#problem1('./face2.jpg',0.6,0.5,'rainbow')
-#problem2('./face1.jpg',0.8,'coloured pencil')
-problem3('./face1.jpg',0.7)
+#problem1('./face1.jpg',0.6,0.5,'simple')
+#problem2('./face1.jpg',0.5,'simple')
+problem2('./face1.jpg',0.5,'coloured pencil')
+#problem3('./face1.jpg',0.7)
 #problem4('./face2.jpg',-0.4,150)
 #lowpassfilter()
