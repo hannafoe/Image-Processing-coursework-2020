@@ -294,11 +294,11 @@ def problem2(img_name,blending_coef,mode):
                     s=0
                     for i in range(-6,7):
                         xs = x+i
-                        if xs>=400:
-                            xs=399
+                        if xs>=rows:
+                            xs=rows-1
                         ys = y+i
-                        if ys>=400:
-                            ys=399
+                        if ys>=cols:
+                            ys=cols-1
                         s+=noise[xs,ys]*(1/13)
                     noise2[x,y]=s
             noise = noise2
@@ -369,6 +369,43 @@ def create_gaussian(sigma,kernel_dim):
     #print(kernel)
     return kernel
 
+def create_gaussian2(sigma,sigma2,kernel_dim,img,x,y):
+    kernel=[]
+    d=math.floor(kernel_dim/2)
+    s=0
+    for i in range(-d,d+1):
+        lst=[]
+        for j in range(-d,d+1):
+            xs = x+i
+            if xs>=rows:
+                xs=rows-1
+            ys = y+j
+            if ys>=cols:
+                ys=cols-1
+            if i==0 and j==0:
+                n=0
+                n2=0
+                #print(n)
+            else:
+                n2 = int(img[x,y])-int(img[xs,ys])
+                #print(n2)
+                i=abs(i)
+                j=abs(j)
+                n=math.sqrt((i*i)+(j*j))
+                #print(n)
+            a=gaussian(n,sigma)
+            b=gaussian(n2,sigma2)
+            s+=a*b
+            lst.append(a*b)
+        kernel.append(lst)
+    for i in range(-d,d+1):
+        for j in range(-d,d+1):
+            kernel[i][j]=kernel[i][j]/s
+    #print(s)
+    #print(kernel)
+    return kernel
+
+
 
 
 def problem3(img_name,blur_amount):
@@ -381,19 +418,30 @@ def problem3(img_name,blur_amount):
         #gaussian_kernel=[[0.011,0.083,0.011],
         #                    [0.083,0.619,0.083],
         #                    [0.011,0.083,0.011]]
-        sigma=blur_amount
+        sigma=8#blur_amount
+        sigma2=0.5
         kernel_dim=5
-        gaussian_kernel=create_gaussian(sigma,kernel_dim)
+        #gaussian_kernel=create_gaussian(sigma,kernel_dim)
         d=math.ceil(kernel_dim/2)
-        for x in range(rows-d):
-            for y in range(cols-d):
-                #apply Gaussian Kernel
-                s=0
-                for i in range(-d+1,d):
-                    for j in range(-d+1,d):
-                        s+=img[x+i,y+j]*gaussian_kernel[i+d-1][j+d-1]
-                img_cpy[x,y]=s
+        b,g,r = cv2.split(img_cpy)
+        c_cpy=np.zeros((rows,cols))
+        channels = [b,g,r]
+        copies=[]
+        for c in channels:#channel
+            for x in range(rows-d):
+                for y in range(cols-d):
+                    #apply Gaussian Kernel
+                    s=0
+                    g2 = create_gaussian2(sigma,sigma2,kernel_dim,c,x,y)
+                    for i in range(-d+1,d):
+                        for j in range(-d+1,d):
+                            s+=c[x+i,y+j]*g2[i+d-1][j+d-1]
+                    c_cpy[x,y]=s
+            copies.append(c_cpy.copy())
+        img_cpy = cv2.merge((copies[0],copies[1],copies[2]))
+
         img_cpy=img_cpy.astype(np.uint8)
+        '''
         #####hardcode a lookup table######
         org_values=[0,5,10,20,50,100,150,200,255]
         new_values=[0,10,15,30,80,130,180,220,255]
@@ -418,7 +466,7 @@ def problem3(img_name,blur_amount):
             for y in range(cols):
                 r[x,y]=spl_3(r[x,y])
         img_cpy=cv2.merge((b,g,r))
-        cv2.imshow('Original Image',img)
+        cv2.imshow('Original Image',img)'''
         cv2.imshow('Smoothed Image',img_cpy)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
@@ -568,7 +616,7 @@ def problem4(img_name,strength_swirl,radius_swirl):
 
 #problem1('./face1.jpg',0.6,0.5,'simple')
 #problem2('./face1.jpg',0.5,'simple')
-problem2('./face1.jpg',0.5,'coloured pencil')
-#problem3('./face1.jpg',0.7)
+#problem2('./face1.jpg',0.5,'coloured pencil')
+problem3('./face1.jpg',0.7)
 #problem4('./face2.jpg',-0.4,150)
 #lowpassfilter()
