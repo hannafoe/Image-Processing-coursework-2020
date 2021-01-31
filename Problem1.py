@@ -289,21 +289,18 @@ def problem2(img_name,blending_coef,mode):
             #noise = cv2.GaussianBlur(noise,(3,3),0)
             noise2=np.copy(noise)
             cv2.imshow('Noise 2',noise)
-            a=0
-            j=0
             for x in range(rows):
-                if j==rows-6:
-                    j=2
-                if j>rows-6:
-                    j+=1
                 for y in range(cols):
-                    if y>=cols-6:
-                        a+=1
                     s=0
-                    for i in range(-6,7-a-j):
-                        s+=noise[x+i,y+i]*(1/13)
+                    for i in range(-6,7):
+                        xs = x+i
+                        if xs>=400:
+                            xs=399
+                        ys = y+i
+                        if ys>=400:
+                            ys=399
+                        s+=noise[xs,ys]*(1/13)
                     noise2[x,y]=s
-                a=0
             noise = noise2
             noise = noise.astype(np.uint8)
             cv2.imshow('Blur noise 2',noise)
