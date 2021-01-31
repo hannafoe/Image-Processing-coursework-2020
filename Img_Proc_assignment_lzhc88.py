@@ -3,6 +3,7 @@ import cv2
 import random
 import math
 from scipy.interpolate import UnivariateSpline
+import sys
 
 def problem1(img_name,darkening_coef,blending_coef,mode):
     #read an image from the specified file
@@ -673,5 +674,8 @@ def problem4(img_name,strength_swirl,radius_swirl):
 #problem2('./face1.jpg',0.5,'simple')
 #problem2('./face1.jpg',0.5,'coloured pencil')
 #problem3('./face2.jpg',30)
-problem4('./face2.jpg',-0.4,150)
+#problem4('./face2.jpg',-0.4,150)
 #lowpassfilter()
+
+
+
