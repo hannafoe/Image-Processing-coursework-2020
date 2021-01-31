@@ -8,10 +8,6 @@ import sys
 def problem1(img_name,darkening_coef,blending_coef,mode):
     #read an image from the specified file
     #Later change this to arbitrary input image file
-    if img_name=='./face1.jpg':
-        print("Face 1")
-    if img_name=='./face2.jpg':
-        print("Face 2")
     img = cv2.imread(img_name,cv2.IMREAD_COLOR)
     if not img is None:
         rows,cols,channels = img.shape
@@ -722,10 +718,10 @@ def main():
                 img_name = sys.argv[2]
                 if len(sys.argv)!=5:
                     print("The number of parameters given does not match the problem.")
-                    print("Problem 1 will continue with the default parameters of:")
+                    print("Problem 2 will continue with the default parameters of:")
                     print("blending coefficient: 0.5")
                     print("mode: simple")
-                    problem1(img_name,0.5,'simple')
+                    problem2(img_name,0.5,'simple')
                 else:
                     blending_coef = sys.argv[3]
                     if type(blending_coef)!=float or type(blending_coef)!=int:
@@ -744,10 +740,52 @@ def main():
                 return
         elif sys.argv[1]=='problem3':
             #run problem3
-            a=1
+            if len(sys.argv)>=2:
+                #read image file path as string
+                img_name = sys.argv[2]
+                if len(sys.argv)!=4:
+                    print("The number of parameters given does not match the problem.")
+                    print("Problem 3 will continue with the default parameters of:")
+                    print("blur amount: 30")
+                    problem3(img_name,30)
+                else:
+                    blur_amount = sys.argv[3]
+                    if type(blur_amount)!=float or type(blur_amount)!=int:
+                        print("The input for the blur amount was not an integer, ")
+                        print("hence the application will proceed with default 30")
+                        blur_amount=30
+                    problem3(img_name,blur_amount)
+            else:
+                print("Not enough arguments: Please provide an image file as a string as a second command line argument")
+                print("e.g. './face1.jpg'")
+                return
         elif sys.argv[1]=='problem4':
             #run problem4
-            a=1
+            if len(sys.argv)>=2:
+                #read image file path as string
+                img_name = sys.argv[2]
+                if len(sys.argv)!=5:
+                    print("The number of parameters given does not match the problem.")
+                    print("Problem 4 will continue with the default parameters of:")
+                    print("strength of swirl: -0.4")
+                    print("radius of swirl: 150")
+                    problem4(img_name,-0.4,150)
+                else:
+                    strength_swirl = sys.argv[3]
+                    if type(strength_swirl)!=float or type(strength_swirl)!=int:
+                        print("The input for the blending coefficient was neither a float or int, ")
+                        print("hence the application will proceed with default -0.4")
+                        strength_swirl=-0.4
+                    radius_swirl = sys.argv[4]
+                    if type(radius_swirl)!=int:
+                        print("The input for the mode parameter was not an integer, ")
+                        print("hence the application will proceed with default 150")
+                        radius_swirl=150
+                    problem4(img_name,strength_swirl,radius_swirl)
+            else:
+                print("Not enough arguments: Please provide an image file as a string as a second command line argument")
+                print("e.g. './face1.jpg'")
+                return
         else:
             print("Please provide the name of a valid function to execute: ")
             print("Valid names for an executable function are the following: ")
