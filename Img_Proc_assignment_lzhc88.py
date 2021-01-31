@@ -677,5 +677,84 @@ def problem4(img_name,strength_swirl,radius_swirl):
 #problem4('./face2.jpg',-0.4,150)
 #lowpassfilter()
 
+def main():
+    if len(sys.argv)<=1:
+        print("No functions were specified, please run the file again specifying which function to run.")
+        return
+    else:
+        if sys.argv[1]=='problem1':
+            #run problem1
+            if len(sys.argv)>=2:
+                #read image file path as string
+                img_name = sys.argv[2]
+                if len(sys.argv)!=6:
+                    print("The number of parameters given does not match the problem.")
+                    print("Problem 1 will continue with the default parameters of:")
+                    print("darkening coefficient: 0.8")
+                    print("blending coefficient: 0.7")
+                    print("mode: simple")
+                    problem1(img_name,0.8,0.7,'simple')
+                else:
+                    darkening_coef = sys.argv[3]
+                    if type(darkening_coef)!=float or type(darkening_coef)!=int:
+                        print("The input for the darkening coefficient was neither a float or int, ")
+                        print("hence the application will proceed with default 0.8")
+                        darkening_coef=0.8
+                    blending_coef = sys.argv[4]
+                    if type(blending_coef)!=float or type(blending_coef)!=int:
+                        print("The input for the blending coefficient was neither a float or int, ")
+                        print("hence the application will proceed with default 0.7")
+                        blending_coef=0.7
+                    mode = sys.argv[5]
+                    if type(mode)!=str:
+                        print("The input for the mode parameter was not a string, ")
+                        print("hence the application will proceed with default 'simple'")
+                        mode = 'simple'
+                    problem1(img_name,darkening_coef,blending_coef,mode)
+            else:
+                print("Not enough arguments: Please provide an image file as a string as a second command line argument")
+                print("e.g. './face1.jpg'")
+                return
+        elif sys.argv[1]=='problem2':
+            #run problem2
+            if len(sys.argv)>=2:
+                #read image file path as string
+                img_name = sys.argv[2]
+                if len(sys.argv)!=5:
+                    print("The number of parameters given does not match the problem.")
+                    print("Problem 1 will continue with the default parameters of:")
+                    print("blending coefficient: 0.5")
+                    print("mode: simple")
+                    problem1(img_name,0.5,'simple')
+                else:
+                    blending_coef = sys.argv[3]
+                    if type(blending_coef)!=float or type(blending_coef)!=int:
+                        print("The input for the blending coefficient was neither a float or int, ")
+                        print("hence the application will proceed with default 0.7")
+                        blending_coef=0.7
+                    mode = sys.argv[4]
+                    if type(mode)!=str:
+                        print("The input for the mode parameter was not a string, ")
+                        print("hence the application will proceed with default 'simple'")
+                        mode = 'simple'
+                    problem2(img_name,blending_coef,mode)
+            else:
+                print("Not enough arguments: Please provide an image file as a string as a second command line argument")
+                print("e.g. './face1.jpg'")
+                return
+        elif sys.argv[1]=='problem3':
+            #run problem3
+            a=1
+        elif sys.argv[1]=='problem4':
+            #run problem4
+            a=1
+        else:
+            print("Please provide the name of a valid function to execute: ")
+            print("Valid names for an executable function are the following: ")
+            print("problem1, problem2, problem3, problem4")
+
+if __name__ == "__main__":
+    main()
+
 
 
