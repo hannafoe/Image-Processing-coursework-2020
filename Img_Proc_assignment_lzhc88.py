@@ -311,19 +311,15 @@ def problem2(img_name,blending_coef,mode):
                     noise2[x,y]=s
             noise = noise2'''
             noise = noise.astype(np.uint8)
-            cv2.imshow('Blur noise 2',noise)
+            
             g=noise
-            new_blending_coef = blending_coef+0.4
-            if new_blending_coef>0.9:
-                new_blending_coef=0.9
+            a = 0.95
+            #enhance brightness
             for x in range(rows):
                 for y in range(cols):
-                    gray[x,y] = new_blending_coef*gray[x,y]
-            for x in range(rows):
-                for y in range(cols):
-                    blend = (1-new_blending_coef)
-                    g[x,y] = blend*g[x,y]
-            g=gray+g
+                    g[x,y] = np.clip(a*g[x,y],0,255)
+            cv2.imshow('Blur noise 2',noise)
+            cv2.imshow('Blur noise 1',b)
             gray=img.copy()
             for x in range(rows):
                 for y in range(cols):
@@ -332,16 +328,14 @@ def problem2(img_name,blending_coef,mode):
                 for y in range(cols):
                     blend = (1-blending_coef)
                     b[x,y] = blend*b[x,y]
-            #for x in range(rows):
-            #    for y in range(cols):
-            #        blend = ((1-blending_coef))+0.4
-            #        if blend>=1:
-            #            blend=1
-            #            break
-            #        b[x,y] = blend*b[x,y]
-            #    if blend==1:
-            #        break
+            for x in range(rows):
+                for y in range(cols):
+                    blend = (1-blending_coef)
+                    g[x,y] = blend*g[x,y]
             b=gray+b
+            g=gray+g
+            cv2.imshow('Bl2',g)
+            cv2.imshow('Bl1',b)
             img = cv2.merge((b,g,gray))
         else:
             for x in range(rows):
