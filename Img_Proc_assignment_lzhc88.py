@@ -256,9 +256,8 @@ def problem2(img_name,blending_coef,mode):
         kernel/=(2*len(kernel))
         #Apply kernel
         noise = cv2.filter2D(noise,-1,kernel)
-        
         ######################################################
-        ##VERSION WITHOUT USING cv2.filter2d FOR CONVOLUTION##
+        ##VERSION WITHOUT USING cv2.filter2D() FOR CONVOLUTION##
         ##TO ENHANCE THE RUNTIME, DID NOT USE A KERNEL########
         #noise2=np.copy(noise)
         #b=0
@@ -275,8 +274,6 @@ def problem2(img_name,blending_coef,mode):
         #noise = noise.astype(np.uint8)
         #cv2.imshow('Blur noise',noise)
         #####################################################
-        
-        
         if mode=='coloured pencil':
             b=np.copy(noise)
             noise = np.zeros(img.shape)
@@ -294,33 +291,34 @@ def problem2(img_name,blending_coef,mode):
             kernel/=(len(kernel))
             #Apply kernel
             noise = cv2.filter2D(noise,-1,kernel)
-            '''
-            noise2=np.copy(noise)
-            cv2.imshow('Noise 2',noise)
-            for x in range(rows):
-                for y in range(cols):
-                    s=0
-                    for i in range(-6,7):
-                        xs = x+i
-                        if xs>=rows:
-                            xs=rows-1
-                        ys = y+i
-                        if ys>=cols:
-                            ys=cols-1
-                        s+=noise[xs,ys]*(1/13)
-                    noise2[x,y]=s
-            noise = noise2'''
+            ##################################################################
+            ##SAME OPERATION WITHOUT cv2.filter2D() USED FOR THE CONVOLUTION##
+            #noise2=np.copy(noise)
+            #cv2.imshow('Noise 2',noise)
+            #for x in range(rows):
+            #    for y in range(cols):
+            #        s=0
+            #        for i in range(-6,7):
+            #            xs = x+i
+            #            if xs>=rows:
+            #                xs=rows-1
+            #            ys = y+i
+            #            if ys>=cols:
+            #                ys=cols-1
+            #            s+=noise[xs,ys]*(1/13)
+            #        noise2[x,y]=s
+            #noise = noise2
+            ##########################################
             noise = noise.astype(np.uint8)
-            
             g=noise
+            ###########################################
+            ##MAKE NOISE A BIT DARKER TO MATCH NOISE1##
             a = 0.95
-            #enhance brightness
             for x in range(rows):
                 for y in range(cols):
                     g[x,y] = np.clip(a*g[x,y],0,255)
-            cv2.imshow('Blur noise 2',noise)
-            cv2.imshow('Blur noise 1',b)
-            gray=img.copy()
+            #############################################
+            ##BLEND THE NOISE WITH THE GRAY IMAGE########
             for x in range(rows):
                 for y in range(cols):
                     gray[x,y] = blending_coef*gray[x,y]
@@ -334,18 +332,17 @@ def problem2(img_name,blending_coef,mode):
                     g[x,y] = blend*g[x,y]
             b=gray+b
             g=gray+g
-            cv2.imshow('Bl2',g)
-            cv2.imshow('Bl1',b)
+            ##LASTLY MERGE THE NOISE-IMAGES WITH THE GRAY IMAGE##
             img = cv2.merge((b,g,gray))
         else:
+            #############################################
+            ##BLEND THE NOISE WITH THE GRAY IMAGE########
             for x in range(rows):
                 for y in range(cols):
                     img[x,y] = blending_coef*img[x,y]
             for x in range(rows):
                 for y in range(cols):
                     noise[x,y] = (1-blending_coef)*noise[x,y]
-            #cv2.addWeighted(img,0.5,noise,1,0.0)
-            #cv2.add(img,noise)
             img=img+noise
             img = img.astype(np.uint8)
         cv2.imshow('Image',img)
@@ -365,12 +362,10 @@ def create_gaussian(sigma,kernel_dim):
         for j in range(-d,d+1):
             if i==0 and j==0:
                 n=0
-                #print(n)
             else:
                 i=abs(i)
                 j=abs(j)
                 n=math.sqrt((i*i)+(j*j))
-                #print(n)
             a=gaussian(n,sigma)
             s+=gaussian(n,sigma)
             lst.append(a)
@@ -378,8 +373,6 @@ def create_gaussian(sigma,kernel_dim):
     for i in range(-d,d+1):
         for j in range(-d,d+1):
             kernel[i][j]=kernel[i][j]/s
-    #print(s)
-    #print(kernel)
     return kernel
 
 def create_bilinear(sigma,sigma2,kernel_dim,img,x,y):
@@ -399,14 +392,11 @@ def create_bilinear(sigma,sigma2,kernel_dim,img,x,y):
             if i==0 and j==0:
                 n=0
                 n2=0
-                #print(n)
             else:
                 n2 = int(img[x,y])-int(img[xs,ys])
-                #print(n2)
                 i=abs(i)
                 j=abs(j)
                 n=math.sqrt((i*i)+(j*j))
-                #print(n)
             a=gaussian(n,sigma)
             b=gaussian(n2,sigma2)
             s+=a*b
@@ -415,8 +405,6 @@ def create_bilinear(sigma,sigma2,kernel_dim,img,x,y):
     for i in range(-d,d+1):
         for j in range(-d,d+1):
             kernel[i][j]=kernel[i][j]/s
-    #print(s)
-    #print(kernel)
     return kernel
 
 
@@ -446,6 +434,8 @@ def problem3(img_name,blur_amount):
         ######APPLY BILINEAR FILTER####################################################
         ######!!!THIS PART TAKES ABOUT 3 MINUTES FOR IMAGE OF SIZE 400*400#############
         sigma=blur_amount-15
+        if sigma<=0:
+            sigma = 0.1
         sigma2=blur_amount
         kernel_dim=3
         d=math.ceil(kernel_dim/2)
@@ -478,7 +468,7 @@ def problem3(img_name,blur_amount):
         org_values=[0,5,10,20,50,100,150,200,255]
         new_values=[0,10,15,30,80,130,180,220,255]
         new_values_2=[0,5,8,15,40,90,140,200,255]
-        new_values_3=[0,5,12,18,48,110,165,200,255]
+        new_values_3=[0,5,12,18,48,110,165,200,255]#beautifies the skin-tone if applied to r channel
         #####apply Univariate spline to lookup table########
         spl = UnivariateSpline(org_values,new_values)
         #spl_2 = UnivariateSpline(org_values,new_values_2)not used
@@ -694,7 +684,12 @@ def is_floatstring(s):
         return True
     except ValueError:
         return False
-
+def is_intstring(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
 def main():
     if len(sys.argv)<=1:
         print("No functions were specified, please run the file again specifying which function to run.")
@@ -778,10 +773,12 @@ def main():
                     problem3(img_name,30)
                 else:
                     blur_amount = sys.argv[3]
-                    if type(blur_amount)!=float or type(blur_amount)!=int:
-                        print("The input for the blur amount was not an integer, ")
+                    if is_floatstring(blur_amount)==False:
+                        print("The input for the blur amount could not be converted into a float, ")
                         print("hence the application will proceed with default 30")
                         blur_amount=30
+                    else:
+                        blur_amount=float(blur_amount)
                     problem3(img_name,blur_amount)
             else:
                 print("Not enough arguments: Please provide an image file as a string as a second command line argument")
@@ -800,15 +797,19 @@ def main():
                     problem4(img_name,-0.4,150)
                 else:
                     strength_swirl = sys.argv[3]
-                    if type(strength_swirl)!=float or type(strength_swirl)!=int:
-                        print("The input for the blending coefficient was neither a float or int, ")
+                    if is_floatstring(strength_swirl)==False:
+                        print("The input for the strength of the swirl could not be converted into a float, ")
                         print("hence the application will proceed with default -0.4")
                         strength_swirl=-0.4
+                    else:
+                        strength_swirl=float(strength_swirl)
                     radius_swirl = sys.argv[4]
-                    if type(radius_swirl)!=int:
-                        print("The input for the mode parameter was not an integer, ")
+                    if is_intstring(radius_swirl)==False:
+                        print("The input for the radius of the swirl could not be converted into an integer, ")
                         print("hence the application will proceed with default 150")
                         radius_swirl=150
+                    else:
+                        radius_swirl=float(radius_swirl)
                     problem4(img_name,strength_swirl,radius_swirl)
             else:
                 print("Not enough arguments: Please provide an image file as a string as a second command line argument")
