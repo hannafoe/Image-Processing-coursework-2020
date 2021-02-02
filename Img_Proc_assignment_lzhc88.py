@@ -224,7 +224,8 @@ def problem1(img_name,darkening_coef,blending_coef,mode):
                 for c in range(channels):
                     mask[x,y,c] = (1-blending_coef)*mask[x,y,c]
         new_img=img+mask
-        cv2.imshow('New image',new_img)
+        cv2.imshow('Light leak image',new_img)
+        cv2.imwrite('light_leak.png',new_img)
         cv2.waitKey(0)
     else:
         print("No image file successfully loaded.")
@@ -345,7 +346,8 @@ def problem2(img_name,blending_coef,mode):
                     noise[x,y] = (1-blending_coef)*noise[x,y]
             img=img+noise
             img = img.astype(np.uint8)
-        cv2.imshow('Image',img)
+        cv2.imshow('Brush stroke effect',img)
+        cv2.imwrite('coloured_pencil.png',img)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -467,7 +469,7 @@ def problem3(img_name,blur_amount):
         #####hardcode a lookup table######
         org_values=[0,5,10,20,50,100,150,200,255]
         new_values=[0,10,15,30,80,130,180,220,255]
-        new_values_2=[0,5,8,15,40,90,140,200,255]
+        #new_values_2=[0,5,8,15,40,90,140,200,255]
         new_values_3=[0,5,12,18,48,110,165,200,255]#beautifies the skin-tone if applied to r channel
         #####apply Univariate spline to lookup table########
         spl = UnivariateSpline(org_values,new_values)
@@ -488,9 +490,9 @@ def problem3(img_name,blur_amount):
             for y in range(cols):
                 r[x,y]=spl_3(r[x,y])
         img_cpy=cv2.merge((b,g,r))
-        cv2.imshow('Original Image',img)
-        cv2.imshow('Smoothed Image',img_cpy)
-        #cv2.imwrite('Smoothed_gaussian_0.7.png',img_cpy)
+        #cv2.imshow('Original Image',img)
+        cv2.imshow('Summer Blues',img_cpy)
+        cv2.imwrite('summer_blues.png',img_cpy)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -530,7 +532,7 @@ def problem4(img_name,strength_swirl,radius_swirl):
     if not img is None:
         img=img.astype(np.uint8)
         original_img = img.copy()
-        cv2.imshow('Original Image',img)
+        #cv2.imshow('Original Image',img)
         rows,cols,channels = img.shape
         center_x = cols//2
         center_y = rows//2
@@ -542,7 +544,7 @@ def problem4(img_name,strength_swirl,radius_swirl):
         ########PRE-FILTERING WITH LOW-PASS FILTER##################
         ########USED create_gaussian(sigma,kernel_dim)##############
         ########THE FUNCTION I CREATED ABOVE########################
-        sigma=0.7
+        sigma=5
         kernel_dim=5
         gaussian_kernel=create_gaussian(sigma,kernel_dim)
         gaussian_kernel=np.array(gaussian_kernel)
@@ -586,7 +588,7 @@ def problem4(img_name,strength_swirl,radius_swirl):
                     ###############################################      
         img_copy=img_copy.astype(np.uint8)
         cv2.imshow('Swirl Image',img_copy)
-        cv2.imwrite('Swirl_img_prefiltering.png',img_copy)
+        cv2.imwrite('swirl_img_prefiltering.png',img_copy)
         ####################################################################
         #########Do the same thing for image without prefiltering###########
         #########Necessary for subtraction image############################
