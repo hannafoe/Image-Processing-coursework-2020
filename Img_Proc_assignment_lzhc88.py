@@ -7,9 +7,20 @@ import sys
 
 def problem1(img_name,darkening_coef,blending_coef,mode):
     #read an image from the specified file
-    #Later change this to arbitrary input image file
     img = cv2.imread(img_name,cv2.IMREAD_COLOR)
     if not img is None:
+        #######################################################
+        ##TYPE CHECK PARAMETERS################################
+        if type(darkening_coef)!=float and type(darkening_coef)!=int:
+            print("Error, darkening coefficient was neither a float nor integer.")
+            return
+        if type(blending_coef)!=float and type(blending_coef)!=int:
+            print("Error, blending coefficient was neither a float nor integer.")
+            return
+        if type(mode)!=str:
+            print("Error, mode was not a string.")
+            return
+        #######################################################
         rows,cols,channels = img.shape
         #Make image darker
         for x in range(rows):
@@ -171,7 +182,6 @@ def problem1(img_name,darkening_coef,blending_coef,mode):
                         if(count % color_change_rate == 0) and col_change!=6:
                             col_change += 1
                             if col_change==4:
-                                #print(colors[col_change])
                                 color_change_rate=10
                         if x > ((rows*end_of_face)+10) and make_ray_thinner < 6:
                             make_ray_thinner += 1
@@ -228,7 +238,7 @@ def problem1(img_name,darkening_coef,blending_coef,mode):
         cv2.imwrite('light_leak.png',new_img)
         cv2.waitKey(0)
     else:
-        print("No image file successfully loaded.")
+        print("The image file could not be loaded. Check if this file exists.")
     cv2.destroyAllWindows()
     
 
@@ -237,6 +247,15 @@ def problem2(img_name,blending_coef,mode):
     img = cv2.imread(img_name,0)
     gray=img
     if not img is None:
+        #######################################################
+        ##TYPE CHECK PARAMETERS################################
+        if type(blending_coef)!=float and type(blending_coef)!=int:
+            print("Error, blending coefficient was neither a float nor integer.")
+            return
+        if type(mode)!=str:
+            print("Error, mode was not a string.")
+            return
+        #######################################################
         rows,cols = img.shape
         #Create noise texture
         noise = np.zeros(img.shape)
@@ -349,6 +368,8 @@ def problem2(img_name,blending_coef,mode):
         cv2.imshow('Brush stroke effect',img)
         cv2.imwrite('coloured_pencil.png',img)
         cv2.waitKey(0)
+    else:
+        print("The image file could not be loaded. Check if this file exists.")
     cv2.destroyAllWindows()
 
 def gaussian(x,sigma):
@@ -417,6 +438,12 @@ def problem3(img_name,blur_amount):
     #and then applies colour grading
     img = cv2.imread(img_name,cv2.IMREAD_COLOR)
     if not img is None:
+        #######################################################
+        ##TYPE CHECK PARAMETERS################################
+        if type(blur_amount)!=float and type(blur_amount)!=int:
+            print("Error, blur amount was neither a float nor integer.")
+            return
+        #######################################################
         rows,cols,channels = img.shape
         img_cpy=img.copy()
         ######ALTERNATIVELY APPLY GAUSSIAN FILTER#######################################
@@ -434,7 +461,7 @@ def problem3(img_name,blur_amount):
         #                s+=img[x+i,y+j]*gaussian_kernel[i+d-1][j+d-1]
         #        img_cpy[x,y]=s
         ######APPLY BILINEAR FILTER####################################################
-        ######!!!THIS PART TAKES ABOUT 3 MINUTES FOR IMAGE OF SIZE 400*400#############
+        ######!!!THIS PART TAKES 2-3 MINUTES FOR IMAGE OF SIZE 400*400#############
         sigma=blur_amount-15
         if sigma<=0:
             sigma = 0.1
@@ -494,42 +521,23 @@ def problem3(img_name,blur_amount):
         cv2.imshow('Summer Blues',img_cpy)
         cv2.imwrite('summer_blues.png',img_cpy)
         cv2.waitKey(0)
+    else:
+        print("The image file could not be loaded. Check if this file exists.")
     cv2.destroyAllWindows()
 
-def lowpassfilter():
-    image = cv2.imread('./face2.jpg',0)
-    if not image is None:
-        image=image.astype(np.uint8)
-        cv2.imshow('Original Image',image)
-        rows,cols = image.shape
-        center_x = cols//2
-        center_y = rows//2
-        image = image.astype(np.float32)
-        ###pre-filtering, low-pass filtering######
-        K=300###cut-off distance (radius) from the Fourier image origin
-        fft_img = np.fft.fft2(image)
-        fft_img = np.fft.fftshift(fft_img)
-        H = np.ones((rows,cols))
-        for x in range(rows):
-            for y in range(cols):
-                #math.sqrt(x**2+y**2)
-                #math.exp(-((x-center_x)**2+(y-center_y)**2)/(2*4**2))
-                if math.sqrt(x**2+y**2)<=K:
-                    H[x,y]=1
-                else:
-                    H[x,y]=0
-        fft_img =H*fft_img
-        fft_img=np.fft.ifftshift(fft_img)
-        image = np.fft.ifft2(fft_img)
-        image = np.real(image)
-        image=image.astype(np.uint8)
-        cv2.imshow('LPF image',image)
-        cv2.waitKey(0)
-    cv2.destroyAllWindows()
 
 def problem4(img_name,strength_swirl,radius_swirl):
     img = cv2.imread(img_name,cv2.IMREAD_COLOR)
     if not img is None:
+        #######################################################
+        ##TYPE CHECK PARAMETERS################################
+        if type(strength_swirl)!=float and type(strength_swirl)!=int:
+            print("Error, strength of swirl was neither a float nor int.")
+            return
+        if type(radius_swirl)!=float and type(radius_swirl)!=int:
+            print("Error, radius of swirl was neither a float nor int.")
+            return
+        #######################################################
         img=img.astype(np.uint8)
         original_img = img.copy()
         #cv2.imshow('Original Image',img)
@@ -544,7 +552,7 @@ def problem4(img_name,strength_swirl,radius_swirl):
         ########PRE-FILTERING WITH LOW-PASS FILTER##################
         ########USED create_gaussian(sigma,kernel_dim)##############
         ########THE FUNCTION I CREATED ABOVE########################
-        sigma=5
+        sigma=2
         kernel_dim=5
         gaussian_kernel=create_gaussian(sigma,kernel_dim)
         gaussian_kernel=np.array(gaussian_kernel)
@@ -587,7 +595,7 @@ def problem4(img_name,strength_swirl,radius_swirl):
                     img_copy[x,y]=1/((x_2-x_1)*(y_2-y_1))*(f_1+f_2+f_3+f_4)
                     ###############################################      
         img_copy=img_copy.astype(np.uint8)
-        cv2.imshow('Swirl Image',img_copy)
+        cv2.imshow('Swirl Image with prefiltering',img_copy)
         cv2.imwrite('swirl_img_prefiltering.png',img_copy)
         ####################################################################
         #########Do the same thing for image without prefiltering###########
@@ -629,6 +637,7 @@ def problem4(img_name,strength_swirl,radius_swirl):
                     img_copy[x,y]=1/((x_2-x_1)*(y_2-y_1))*(f_1+f_2+f_3+f_4)
                     ###############################################      
         img = img_copy.copy()
+        cv2.imshow('Swirl Image without prefiltering',img_copy)
         cv2.imwrite('swirl_image_without_prefiltering.png',img_copy)
         #######image warp inverse transformation######
         for x in range(rows):
@@ -672,14 +681,12 @@ def problem4(img_name,strength_swirl,radius_swirl):
         cv2.imshow('Difference between original and unswirled img',subtraction_img)
         cv2.imwrite('subtraction_image.png',subtraction_img)
         cv2.waitKey(0)
+    else:
+        print("The image file could not be loaded. Check if this file exists.")
     cv2.destroyAllWindows()
 
-#problem1('./face1.jpg',0.6,0.5,'simple')
-#problem2('./face1.jpg',0.5,'simple')
-#problem2('./face1.jpg',0.5,'coloured pencil')
-#problem3('./face2.jpg',30)
-#problem4('./face2.jpg',-0.4,150)
-#lowpassfilter()
+
+
 def is_floatstring(s):
     try:
         float(s)
