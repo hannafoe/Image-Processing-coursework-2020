@@ -1,0 +1,56 @@
+##PROBLEM 1##
+#COMMAND STRUCTURE:#
+python pythonfile_name.py problem1 imgfile_pathname darkening_coefficient blending_coefficient mode
+#PARAMETER EXPLANATION#
+darkening coefficient: float in range(0,1) where 0 = black, 1 = original image
+blending coefficient: float in range(0,1) where 0 = black image with bright light leak, 1 = bright image with no light leak
+mode: 'simple': simple light leak, 'rainbow': rainbow light leak
+#EXAMPLE COMMANDS ON THE COMMANDLINE#
+python .\lzhc88.py problem1 './face1.jpg' 0.8 0.7 'simple'
+python .\lzhc88.py problem1 './face1.jpg' #DEFAULT RUNS WITH THE ABOVE PARAMETERS
+python .\lzhc88.py problem1 './face1.jpg' 0.8 0.7 'rainbow'
+#EXAMPLE COMMANDS ON PYTHON#
+problem1('./face1.jpg',0.8,0.7,'simple')
+problem1('./face1.jpg',0.8,0.7,'rainbow')
+
+
+##PROBLEM 2##
+#COMMAND STRUCTURE:#
+python pythonfile_name.py problem2 imgfile_pathname blending_coefficient mode
+#PARAMETER EXPLANATION#
+blending coefficient: float in range(0,1) where 0 = only noise, 1 = only original grey image
+mode: 'monochrome': monochrome pencil effect, 'coloured pencil': coloured pencil effect
+#EXAMPLE COMMANDS ON THE COMMANDLINE#
+python .\lzhc88.py problem2 './face1.jpg' 0.5 'simple'
+python .\lzhc88.py problem2 './face1.jpg' #DEFAULT RUNS WITH THE ABOVE PARAMETERS
+python .\lzhc88.py problem2 './face1.jpg' 0.5 'coloured pencil'
+#EXAMPLE COMMANDS ON PYTHON#
+problem2('./face1.jpg',0.5,'simple')
+problem2('./face1.jpg',0.5,'coloured pencil')
+
+
+##PROBLEM 3##
+#COMMAND STRUCTURE:#
+python pythonfile_name.py problem3 imgfile_pathname blur_amount
+#PARAMETER EXPLANATION#
+blur amount: float or integer corresponding to sigma in the bilinear filter, bigger sigma => more blurring
+#EXAMPLE COMMANDS ON THE COMMANDLINE#
+python .\lzhc88.py problem3 './face1.jpg' 30
+python .\lzhc88.py problem3 './face1.jpg' #DEFAULT RUNS WITH THE ABOVE PARAMETERS
+#EXAMPLE COMMANDS ON PYTHON#
+problem3('./face1.jpg',30)
+
+
+##PROBLEM 4##
+#COMMAND STRUCTURE:#
+python pythonfile_name.py problem4 imgfile_pathname strength_swirl radius_swirl
+#PARAMETER EXPLANATION#
+strength of swirl: float that represents the angle (radians) from which to swirl the outer-most pixels
+		-> negative values: left swirl
+		-> positive values: right swirl
+radius of swirl: integer in range(0,len_img//2), if bigger integer is given radius of swirl is turned into len_img//2-1, so 199 in case of 400*400 img
+#EXAMPLE COMMANDS ON THE COMMANDLINE#
+python .\lzhc88.py problem4 './face1.jpg' -0.4 150
+python .\lzhc88.py problem4 './face1.jpg' #DEFAULT RUNS WITH THE ABOVE PARAMETERS
+#EXAMPLE COMMANDS ON PYTHON#
+problem4('./face1.jpg',-0.4,150)

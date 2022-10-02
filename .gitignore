@@ -14,9 +14,8 @@ swirl_image_without_prefiltering.png
 subtraction_image.png
 simple_light_leak.png
 coloured_pencil.png
-example_commands.txt
 light_leak.png
 *.png
 *.zip
 sh.exe.stackdump
-Image*
+
